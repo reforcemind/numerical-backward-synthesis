@@ -1,0 +1,5 @@
+method,bits_45_4,false_zero
+oracle,0x008f,0
+scale_sep,0x008f,0
+baseline,0x0000,1
+ir_pipeline,0x008f,0

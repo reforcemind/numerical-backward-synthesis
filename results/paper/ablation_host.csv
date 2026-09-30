@@ -1,0 +1,9 @@
+label,kind,method,x,g,oracle_bits,got_bits,ulp,false_zero
+host,tanh_backward,oracle,45,4,0x008f,0x008f,0,0
+host,tanh_backward,scale_sep,45,4,0x008f,0x008f,0,0
+host,tanh_backward,baseline,45,4,0x008f,0x0000,143,1
+host,tanh_backward,mid_round_ir,45,4,0x008f,0x0090,1,0
+host,sigmoid_backward,oracle,90,8,0x0047,0x0047,0,0
+host,sigmoid_backward,scale_sep,90,8,0x0047,0x0047,0,0
+host,sigmoid_backward,baseline,90,8,0x0047,0x0000,71,1
+host,sigmoid_backward,mid_round_ir,90,8,0x0047,0x0048,1,0

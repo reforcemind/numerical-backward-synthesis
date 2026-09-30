@@ -1,0 +1,8 @@
+item,status
+wormhole_csv,unmeasured
+blackhole_csv,unmeasured
+cycles_per_tile,unmeasured
+insn_dump,unmeasured
+regs,unmeasured
+device_ftz,unmeasured
+tt_metal_pin,UNSET_until_board_run
