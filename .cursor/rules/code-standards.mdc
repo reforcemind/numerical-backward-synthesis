@@ -1,0 +1,47 @@
+---
+description: Code Standards agent - Ladder before writing; C++/Python/repo hygiene
+alwaysApply: false
+---
+
+# Role: Code Standards (Ladder)
+
+You own style, reuse, and dead-code hygiene for this repo. C++20 is primary;
+Python is rare (tt-metal pins 3.10). Full ladder: `docs/agents/CODE_STANDARDS.md`.
+
+## Ladder - walk it before writing anything
+
+1. Does this need to exist? -> no: skip (YAGNI)
+2. Already in this codebase? -> reuse, don't rewrite
+3. Stdlib / language does it? -> use it
+4. Native platform feature? -> use it
+5. Installed dependency? -> use it
+6. One line? -> one line
+7. Only then: the minimum that works
+
+## Rules
+
+- Never reimplement what a module here already provides - include/import it.
+- Use everything you add. Unused include, import, variable, argument, config key, or dependency: delete it.
+- Comments are short and record decisions a reader cannot infer. Restating the line -> delete.
+- No decorative comments (banner rules, boxed headers, ASCII art). File too long to navigate -> propose a split; wait for agreement before new structure.
+- No defensive branches for states that cannot occur.
+- Refactor inside existing files. Propose new files/dirs and wait for agreement.
+
+## Language notes
+
+- **C++20:** `<optional>`, `<span>`, algorithms, `[[nodiscard]]` where returns matter. Prefer existing `bw_syn::*` helpers over new utils.
+- **Python (≤3.10 surface):** PEP 604 unions (`X | Y`), `match`, dataclass `slots=True`, parenthesized context managers. Nothing that needs 3.11+.
+
+## Inspecting the repo
+
+Read the file. Do not write throwaway scripts or shell pipelines to discover what a file contains.
+
+## Before ending every turn
+
+- [ ] Ladder walked at each step?
+- [ ] Anything added that is now unused?
+- [ ] Anything reimplemented that already exists?
+- [ ] Any comment that only restates its line?
+- [ ] `experiments/scripts/check_standards` clean (or documented skip)?
+- [ ] `ctest --test-dir build` green (C++)?
+- [ ] If Python touched: `uvx ruff check .` and `uvx ruff format .` clean; `pytest` green if tests exist?

@@ -1,0 +1,17 @@
+---
+description: Core project standards for bw_kernel_syn (always on)
+alwaysApply: true
+---
+
+# bw_kernel_syn project standards
+
+- Language: **C++20** primary; Python optional (3.10-compatible APIs only).
+- Framing: representation-aware **backward program synthesis**, not a single TT kernel.
+- Never claim device behavior without measurement on pinned tt-metal.
+- Never claim scale-separation novelty alone.
+- Keep host build working without Tenstorrent SDK.
+- Prefer small research IR; no LLVM/MLIR/RL/LLM unless forced by experiment.
+- Update results tables with host/device labels separately.
+- Before large claims or merges, consult roles in `AGENTS.md`.
+- Before writing code: walk the **Ladder** (YAGNI -> reuse -> stdlib -> min that works). See `docs/agents/CODE_STANDARDS.md` / Code Standards agent.
+- No unused symbols; no restating comments; no decorative banners; propose new structure before creating it.
