@@ -1,0 +1,6 @@
+#pragma once
+
+#define BW_SYN_VERSION_MAJOR 0
+#define BW_SYN_VERSION_MINOR 1
+#define BW_SYN_VERSION_PATCH 0
+#define BW_SYN_VERSION_STRING "0.1.0"
