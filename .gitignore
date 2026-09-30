@@ -1,0 +1,13 @@
+build/
+cmake-build-*/
+.vscode/
+.idea/
+.ruff_cache/
+__pycache__/
+*.o
+*.obj
+*.exe
+*.a
+*.lib
+compile_commands.json
+.DS_Store
