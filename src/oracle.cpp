@@ -1,6 +1,7 @@
 #include "bw_syn/oracle.hpp"
 
 #include <cmath>
+#include <stdexcept>
 
 namespace bw_syn {
 
@@ -19,6 +20,8 @@ std::string backward_kind_name(BackwardKind k) {
 }
 
 double exact_derivative_f64(BackwardKind kind, double x, double alpha) {
+  if (kind == BackwardKind::Elu && !std::isfinite(alpha))
+    throw std::invalid_argument("ELU alpha must be finite");
   switch (kind) {
   case BackwardKind::Tanh: {
 
@@ -54,6 +57,8 @@ double exact_derivative_f64(BackwardKind kind, double x, double alpha) {
 }
 
 double exact_product_f64(BackwardKind kind, double x, double g, double alpha) {
+  if (kind == BackwardKind::Elu && !std::isfinite(alpha))
+    throw std::invalid_argument("ELU alpha must be finite");
   constexpr double kLog2 = 0.693147180559945309417;
   constexpr double kExpUnder = -700.0;
 
@@ -88,7 +93,7 @@ double exact_product_f64(BackwardKind kind, double x, double g, double alpha) {
     if (x > 0.0)
       return g;
     if (alpha == 0.0)
-      return 0.0;
+      return std::copysign(0.0, g * alpha);
     int eg = 0;
     const double mg = std::frexp(g, &eg);
     const double t = x + static_cast<double>(eg) * kLog2 + std::log(std::fabs(alpha));
@@ -102,19 +107,28 @@ double exact_product_f64(BackwardKind kind, double x, double g, double alpha) {
 
 BF16 contract_reference(
     BackwardKind kind, const NumericalContract& contract, BF16 x, BF16 g, double alpha) {
+  if (kind == BackwardKind::Elu && !std::isfinite(alpha))
+    throw std::invalid_argument("ELU alpha must be finite");
   if (x.is_nan() || g.is_nan())
     return BF16::qnan();
 
   if (x.is_inf() || g.is_inf()) {
+    if (kind == BackwardKind::Elu && x.is_inf() && !x.signbit())
+      return g;
+    if (g.is_inf() && x.is_finite()) {
+      if (kind == BackwardKind::Elu) {
+        if (x.to_f64() > 0.0)
+          return g;
+        if (alpha == 0.0)
+          return BF16::qnan();
+        return BF16::inf(g.signbit() != std::signbit(alpha));
+      }
+      return g;
+    }
     // Avoid IEEE 0·∞ → NaN when the mathematical derivative vanishes at infinity.
     if (x.is_inf() && g.is_finite()) {
-      if (kind == BackwardKind::Elu && !x.signbit()) {
-        BF16 out = round_to_bf16(g.to_f64(), contract.output_round);
-        if (contract.flush_output_subnormals)
-          out = flush_subnormals(out);
-        return out;
-      }
-      BF16 out = BF16::zero(g.signbit());
+      BF16 out =
+          BF16::zero(kind == BackwardKind::Elu && std::signbit(alpha) ? !g.signbit() : g.signbit());
       if (contract.flush_output_subnormals)
         out = flush_subnormals(out);
       return out;

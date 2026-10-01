@@ -109,8 +109,14 @@ HardwareRunReport run_critical_tanh(DeviceMode prefer) {
       xs.push_back(BF16::from_f64(spec.x));
       gs.push_back(BF16::from_f64(spec.g));
     }
-    got = session->eval_batch(TtKernelKind::ScaleSeparated, xs, gs);
+    got = session->eval_batch(TtKernelKind::Factored, xs, gs);
     base_dev = session->eval_batch(TtKernelKind::BaselineMaterialize, xs, gs);
+    rep.device_warmup_runs = kDeviceWarmupRuns;
+    rep.device_measured_runs = kDeviceMeasuredRuns;
+    for (int i = 0; i < rep.device_warmup_runs + rep.device_measured_runs; ++i) {
+      session->eval_batch(TtKernelKind::Factored, xs, gs);
+      session->eval_batch(TtKernelKind::BaselineMaterialize, xs, gs);
+    }
   }
 #endif
 
@@ -139,11 +145,12 @@ HardwareRunReport run_critical_tanh(DeviceMode prefer) {
     cr.ulp_vs_oracle = ulp_distance(cr.device_or_sim, cr.oracle);
     cr.false_zero_baseline =
         cr.baseline_model.is_zero() && !cr.oracle.is_zero() && cr.oracle.is_finite();
-    cr.pass = cr.ulp_vs_oracle <= contract.max_ulp_error;
+    cr.pass =
+        check_sample(contract, x, g, cr.device_or_sim, cr.oracle).verdict == ContractVerdict::Pass;
     if (!cr.pass)
       rep.all_pass = false;
     if (cr.false_zero_baseline)
-      rep.ftz_observed = true;
+      rep.baseline_false_zero_observed = true;
     rep.cases.push_back(cr);
   }
 
@@ -154,15 +161,12 @@ HardwareRunReport run_critical_tanh(DeviceMode prefer) {
         saw_motiv = true;
         if (c.oracle.bits != 0x008f)
           throw std::runtime_error("device run: host oracle for (45,4) is not 0x008f");
-        if (!c.pass)
-          throw std::runtime_error(
-              "device run: scale-separated kernel failed motivating case (45,4)");
       }
     }
     if (!saw_motiv)
       throw std::runtime_error("device run: missing motivating case (45,4)");
-    if (!rep.ftz_observed.has_value())
-      rep.ftz_observed = false;
+    if (!rep.baseline_false_zero_observed.has_value())
+      rep.baseline_false_zero_observed = false;
   }
 
   rep.host_wall_ms =

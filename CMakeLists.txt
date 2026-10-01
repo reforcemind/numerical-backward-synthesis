@@ -61,7 +61,14 @@ if(BW_SYN_WITH_TTMETAL)
     set(TT_METAL_HOME "$ENV{TT_METAL_HOME}")
   endif()
   target_compile_definitions(bw_syn PUBLIC BW_SYN_WITH_TTMETAL=1)
-  target_include_directories(bw_syn PUBLIC "${TT_METAL_HOME}")
+  target_include_directories(bw_syn PRIVATE
+    "${TT_METAL_HOME}"
+    "${TT_METAL_HOME}/tt_metal/api"
+    "${TT_METAL_HOME}/tt_metal/api/tt-metalium"
+    "${TT_METAL_HOME}/build/tt_metal/api"
+    "${TT_METAL_HOME}/tt_metal/hostdevcommon/api"
+    "${TT_METAL_HOME}/tt_metal/third_party/umd/include"
+  )
   target_include_directories(bw_syn PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tt/kernels/common")
   find_library(TT_METAL_LIB NAMES tt_metal tt_metalium
     PATHS "${TT_METAL_HOME}/build/lib" "${TT_METAL_HOME}/built" NO_DEFAULT_PATH)
@@ -79,6 +86,7 @@ endfunction()
 bw_add_tool(bw_syn_cli)
 bw_add_tool(export_results)
 bw_add_tool(run_tt_harness)
+bw_add_tool(summarize_tt_profiler)
 
 if(BW_SYN_BUILD_TESTS)
   enable_testing()
@@ -86,6 +94,11 @@ if(BW_SYN_BUILD_TESTS)
             test_synth_semantics test_sigmoid test_tt_harness_sim test_elu)
     add_executable(${t} tests/${t}.cpp)
     target_link_libraries(${t} PRIVATE bw_syn)
+    if(MSVC)
+      target_compile_options(${t} PRIVATE /UNDEBUG)
+    else()
+      target_compile_options(${t} PRIVATE -UNDEBUG)
+    endif()
     add_test(NAME ${t} COMMAND ${t})
   endforeach()
 endif()

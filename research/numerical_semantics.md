@@ -59,9 +59,8 @@ Functions:
 This can produce **false zeros** when \(f'(x)\) underflows but \(g f'(x)\) does not.
 This is a **model** of an unsafe intermediate path — not a measurement of device FTZ.
 
-IR `ir_direct()` rounds \(f'\) to BF16 without an explicit Flush op; synthesis
-`DirectMaterialize` **evaluation** uses `baseline_materialize_derivative` (FTZ model),
-not IR round-only.
+IR `ir_direct()` rounds \(f'\) to BF16 and applies an explicit `FlushBF16` node.
+Synthesis verifies this same IR, so cost and numerical checks refer to one program.
 
 ## Scale-separated intent
 
@@ -84,9 +83,25 @@ BF16/FTZ of \(f'\), mid-stream mantissa round, subnormal flush, exp-sum overflow
 - NaN in either input → NaN out
 - `|x|=∞`, finite `g`, derivative → 0 (tanh/sigmoid/erf; ELU at −∞) → signed zero of `g`
 - `|x|=+∞`, finite `g`, ELU → round(`g`)
-- `|g|=∞` with vanishing derivative, or both infinite → NaN (avoid IEEE `0·∞`)
+- Finite `x`, `|g|=∞`, nonzero derivative → signed infinity (for ELU the sign also depends on `alpha` when `x≤0`)
+- `|g|=∞` with a zero derivative, or infinite `x` with a vanishing derivative → NaN for `0·∞`
+- ELU at `x=+∞` has derivative one, so infinite `g` passes through
 - Subnormals at output kept unless `flush_output_subnormals`
 - Exponent overflow/underflow at reconstruction
 - Derivative singularities (none for tanh/sigmoid; ELU kink at 0)
 
 Scaling alone does **not** guarantee correct rounding if intermediate rounding is reintroduced.
+
+The synthesis verifier evaluates candidate IR on exceptional inputs instead of
+substituting the reference. Tanh and sigmoid candidates carry a
+`PositiveDerivativeInf` guard: because their analytic derivatives are strictly
+positive for finite \(x\), infinite \(g\) retains its sign even when an f64
+exponential underflows. Two distinct IRs per function pass the full default
+boundary sample, and the selected IR passes two 196,608-pair fixed-axis BF16
+sweeps plus three 16-bit pairing permutations (196,608 pairs). The 952 finite
+high-precision probes checked by
+`experiments/scripts/check_oracle_mpmath.py` agree with the f64 reference;
+none of these checks covers every \((x,g)\) pair. The standalone host helper has
+separate exception handling and must be reported separately. IR evaluation uses the contract's
+rounding mode, but its transcendental operations are still f64 host approximations;
+directed-rounding guarantees over real arithmetic are not established.

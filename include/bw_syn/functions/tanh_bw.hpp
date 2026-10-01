@@ -11,6 +11,7 @@ BF16 baseline_materialize(BF16 x, BF16 g, const NumericalContract& c);
 BF16 scale_separated(BF16 x, BF16 g, const NumericalContract& c);
 Program ir_direct();
 Program ir_scale_separated();
+Program ir_factored();
 
 } // namespace tanh_bw
 } // namespace bw_syn

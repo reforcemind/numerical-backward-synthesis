@@ -19,6 +19,7 @@ struct VerifyConfig {
   double alpha{1.0};
   bool exhaustive_x{false};
   bool exhaustive_g{false};
+  int paired_bit_permutations{0};
   std::vector<BF16> fixed_g_values;
   std::vector<BF16> fixed_x_values;
   bool use_reduced_significand_domain{false};

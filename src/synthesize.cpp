@@ -8,7 +8,10 @@
 #include "bw_syn/transforms.hpp"
 
 #include <chrono>
+#include <iomanip>
 #include <sstream>
+#include <stdexcept>
+#include <unordered_set>
 
 namespace bw_syn {
 
@@ -20,20 +23,35 @@ std::string synth_params_key(const SynthParams& p) {
   return os.str();
 }
 
-static Program base_program(BackwardKind kind, EvalStrategy ev, double alpha) {
-  if (ev == EvalStrategy::DirectMaterialize) {
-    if (kind == BackwardKind::Tanh)
-      return tanh_bw::ir_direct();
-    if (kind == BackwardKind::Sigmoid)
-      return sigmoid_bw::ir_direct();
+static std::string reachable_program_key(const Program& program) {
+  const auto live = reachable_nodes(program);
+  std::vector<int> canonical(program.nodes.size(), -1);
+  std::ostringstream os;
+  for (size_t position = 0; position < live.size(); ++position) {
+    const int i = live[position];
+    const auto& node = program.nodes[static_cast<size_t>(i)];
+    canonical[static_cast<size_t>(i)] = static_cast<int>(position);
+    os << static_cast<int>(node.op);
+    if (node.op == OpKind::ConstF64)
+      os << ':' << std::hexfloat << node.c_f64 << std::defaultfloat;
+    if (node.op == OpKind::ConstI32)
+      os << ':' << node.c_i32;
+    os << '(';
+    for (int arg : node.args)
+      os << canonical[static_cast<size_t>(arg)] << ',';
+    os << ");";
   }
+  return os.str();
+}
+
+static Program base_program(BackwardKind kind, double alpha) {
   if (kind == BackwardKind::Tanh)
-    return tanh_bw::ir_scale_separated();
+    return tanh_bw::ir_direct();
   if (kind == BackwardKind::Sigmoid)
-    return sigmoid_bw::ir_scale_separated();
+    return sigmoid_bw::ir_direct();
   if (kind == BackwardKind::Erf)
-    return erf_bw::ir_scale_separated();
-  return elu_bw::ir_scale_separated(alpha);
+    return erf_bw::ir_direct();
+  return elu_bw::ir_direct(alpha);
 }
 
 static void mutate_round_mant(Program& p) {
@@ -101,45 +119,46 @@ static void clamp_abs_x(Program& p) {
   }
 }
 
-Program build_candidate_program(BackwardKind kind, const SynthParams& p, double alpha) {
-  Program prog = base_program(kind, p.eval, alpha);
-  if (p.range_red == RangeReduction::ClampDomain)
-    clamp_abs_x(prog);
-  if (p.eval != EvalStrategy::ScaleSeparated)
-    return prog;
-
-  if (p.round == RoundStrategy::FinalOnly && !has_intermediate_bf16_round(prog)) {
-    auto tr = apply_default_scale_pipeline(prog);
-    if (tr.applied)
-      prog = tr.program;
-  } else if (p.round == RoundStrategy::IntermediateAndFinal) {
-    mutate_mid_round(prog);
+static void preserve_infinite_gradient(Program& p) {
+  int x = -1;
+  int g = -1;
+  for (int i = 0; i < static_cast<int>(p.nodes.size()); ++i) {
+    if (p.nodes[static_cast<size_t>(i)].op == OpKind::InputX)
+      x = i;
+    if (p.nodes[static_cast<size_t>(i)].op == OpKind::InputG)
+      g = i;
   }
-
-  if (p.norm == NormStrategy::None)
-    strip_normalize(prog);
-  else {
-    auto n = apply_insert_normalize(prog);
-    if (n.applied)
-      prog = n.program;
-  }
-
-  if (p.reconstruct == ReconstructStrategy::RoundThenLdexp)
-    mutate_round_mant(prog);
-  return prog;
+  if (x < 0 || g < 0)
+    throw std::invalid_argument("backward program needs x and g inputs");
+  p.result = p.add(Node{OpKind::PositiveDerivativeInf, {x, g, p.result}});
 }
 
-static BF16 run_candidate(BackwardKind kind,
-                          const SynthParams& p,
-                          BF16 x,
-                          BF16 g,
-                          const NumericalContract& c,
-                          double alpha) {
-  if (!x.is_finite() || !g.is_finite())
-    return contract_reference(kind, c, x, g, alpha);
-  if (p.eval == EvalStrategy::DirectMaterialize)
-    return baseline_materialize_derivative(kind, c, x, g, alpha);
-  return detail::eval_ir_under_contract(build_candidate_program(kind, p, alpha), x, g, c);
+Program build_candidate_program(BackwardKind kind, const SynthParams& p, double alpha) {
+  Program prog = base_program(kind, alpha);
+  if (p.range_red == RangeReduction::ClampDomain)
+    clamp_abs_x(prog);
+  if (p.eval == EvalStrategy::ScaleSeparated) {
+    const auto tr = apply_default_scale_pipeline(prog);
+    if (!tr.applied)
+      throw std::logic_error("scale transform did not match backward product");
+    prog = tr.program;
+    if (p.round == RoundStrategy::IntermediateAndFinal)
+      mutate_mid_round(prog);
+
+    if (p.norm == NormStrategy::None)
+      strip_normalize(prog);
+    else {
+      auto n = apply_insert_normalize(prog);
+      if (n.applied)
+        prog = n.program;
+    }
+
+    if (p.reconstruct == ReconstructStrategy::RoundThenLdexp)
+      mutate_round_mant(prog);
+  }
+  if (kind == BackwardKind::Tanh || kind == BackwardKind::Sigmoid || kind == BackwardKind::Erf)
+    preserve_infinite_gradient(prog);
+  return prog;
 }
 
 SynthResult synthesize(const SynthConfig& cfg) {
@@ -173,11 +192,14 @@ SynthResult synthesize(const SynthConfig& cfg) {
   }
 
   out.search_space_size = space.size();
+  std::unordered_set<std::string> seen_programs;
   for (const auto& params : space) {
     Candidate cand;
     cand.params = params;
     cand.id = synth_params_key(params);
     cand.program = build_candidate_program(cfg.kind, params, cfg.alpha);
+    if (!seen_programs.insert(reachable_program_key(cand.program)).second)
+      continue;
     cand.cost = estimate_cost(cand.program, cfg.cost_model);
     ++out.candidates_built;
     VerifyConfig vcfg = cfg.verify_cfg;
@@ -186,21 +208,19 @@ SynthResult synthesize(const SynthConfig& cfg) {
     vcfg.alpha = cfg.alpha;
     cand.verify = verify_kernel(
         [&](BF16 x, BF16 g) {
-          return run_candidate(cfg.kind, params, x, g, cfg.contract, cfg.alpha);
+          return detail::eval_ir_under_contract(cand.program, x, g, cfg.contract);
         },
         vcfg);
     cand.verified = cand.verify.ok && cand.verify.counters.max_ulp <= cfg.max_ulp_to_accept &&
                     cand.verify.counters.false_zeros == 0;
-    ++out.candidates_verified;
+    if (cand.verified)
+      ++out.candidates_verified;
     out.all.push_back(std::move(cand));
   }
 
   std::vector<Candidate*> pool;
   for (auto& c : out.all)
     if (c.verified)
-      pool.push_back(&c);
-  if (pool.empty())
-    for (auto& c : out.all)
       pool.push_back(&c);
 
   for (auto* a : pool) {

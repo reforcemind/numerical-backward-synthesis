@@ -1,7 +1,5 @@
 #include "bw_syn/backends/tt_harness.hpp"
-#include "bw_syn/cost_model.hpp"
 #include "bw_syn/csv_io.hpp"
-#include "bw_syn/functions/tanh_bw.hpp"
 
 #include <cstdlib>
 #include <filesystem>
@@ -37,16 +35,8 @@ int main(int argc, char** argv) {
     return 3;
   }
 
-  auto cost = estimate_cost(tanh_bw::ir_scale_separated(), {});
   const char* label = prefer == DeviceMode::TtMetal ? "device" : "host_sim";
   const bool host = prefer == DeviceMode::HostSim;
-  const std::string cycles = host ? std::to_string(static_cast<int>(cost.latency)) : "";
-  const std::string insn = host ? std::to_string(cost.instruction_count) : "";
-  const std::string regs = host ? std::to_string(cost.register_estimate) : "";
-  std::string ftz;
-  if (!host && rep.ftz_observed.has_value())
-    ftz = *rep.ftz_observed ? "1" : "0";
-
   fs::create_directories(fs::path(out).parent_path());
   std::vector<std::string> rows;
   for (const auto& c : rep.cases)
@@ -54,8 +44,7 @@ int main(int argc, char** argv) {
                    "," + csv_f32(c.spec.x) + "," + csv_f32(c.spec.g) + "," + hex16(c.oracle.bits) +
                    "," + hex16(c.device_or_sim.bits) + "," + hex16(c.baseline_model.bits) + "," +
                    std::to_string(c.ulp_vs_oracle) + "," + (c.pass ? "1" : "0") + "," +
-                   (c.false_zero_baseline ? "1" : "0") + "," + cycles + "," + insn + "," + regs +
-                   "," + ftz);
+                   (c.false_zero_baseline ? "1" : "0") + ",,,,");
   if (!write_csv(out,
                  "label,arch,tt_metal_commit,x,g,oracle_bits,got_bits,baseline_bits,ulp,pass,"
                  "false_zero_baseline,cycles_per_tile,insn,regs,ftz",
@@ -71,8 +60,10 @@ int main(int argc, char** argv) {
       st << "arch," << rep.device.arch << "\n";
       st << "tt_metal_commit," << rep.device.tt_metal_commit << "\n";
       st << "all_pass," << (rep.all_pass ? "1" : "0") << "\n";
-      st << "ftz_observed_baseline," << (rep.ftz_observed.value_or(false) ? "1" : "0") << "\n";
-      st << "cycles_per_tile,unmeasured\n";
+      st << "baseline_false_zero_observed,"
+         << (rep.baseline_false_zero_observed.value_or(false) ? "1" : "0") << "\n";
+      st << "device_warmup_runs," << rep.device_warmup_runs << "\n";
+      st << "device_measured_runs," << rep.device_measured_runs << "\n";
       st << "insn_dump,unmeasured\n";
       st << "regs,unmeasured\n";
     }

@@ -6,12 +6,14 @@ namespace bw_syn {
 
 CostEstimate estimate_cost(const Program& p, const CostModel& model) {
   CostEstimate e;
-  e.instruction_count = static_cast<int>(p.nodes.size());
+  const auto live = reachable_nodes(p);
+  e.instruction_count = static_cast<int>(live.size());
 
-  e.register_estimate = std::min(8, 2 + static_cast<int>(p.nodes.size() / 3));
+  e.register_estimate = std::min(8, 2 + static_cast<int>(live.size() / 3));
 
   double lat = 0.0;
-  for (const auto& n : p.nodes) {
+  for (int i : live) {
+    const auto& n = p.nodes[static_cast<size_t>(i)];
     switch (n.op) {
     case OpKind::Add:
     case OpKind::Sub:
@@ -45,6 +47,7 @@ CostEstimate estimate_cost(const Program& p, const CostModel& model) {
       lat += model.latency_exp;
       break;
     case OpKind::RoundBF16:
+    case OpKind::FlushBF16:
       lat += model.latency_round;
       break;
     default:

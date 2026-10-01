@@ -1,4 +1,11 @@
 build/
+build-tt/
+build-tt-review/
+output/
+docs/paper.tex
+docs/references.bib
+research/appendix_proofs.md
+tmp/
 cmake-build-*/
 .vscode/
 .idea/

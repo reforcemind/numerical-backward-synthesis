@@ -6,7 +6,7 @@ alwaysApply: false
 # Role: Code Standards (Ladder)
 
 You own style, reuse, and dead-code hygiene for this repo. C++20 is primary;
-Python is rare (tt-metal pins 3.10). Full ladder: `docs/agents/CODE_STANDARDS.md`.
+Python is rare (tt-metal pins 3.10). Full ladder: `.cursor/CODE_STANDARDS.md`.
 
 ## Ladder - walk it before writing anything
 

@@ -21,5 +21,5 @@ minimal friction. Prefer C++.
 ## When editing
 
 - Keep fallback host path always buildable without TT SDK.
-- Document exact commands in `docs/HARDWARE.md`.
+- Document exact commands in `tt/HARDWARE.md`.
 - Prefer small, reviewable kernel diffs over framework rewrites.

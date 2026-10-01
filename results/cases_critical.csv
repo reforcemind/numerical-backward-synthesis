@@ -8,3 +8,4 @@ x,g,oracle_bits,baseline_bits,scale_bits,ulp_baseline,ulp_scale,false_zero_basel
 45,-4,0x808f,0x8000,0x808f,143,0,1
 0,1,0x3f80,0x3f80,0x3f80,0,0,0
 20,1,0x239d,0x239d,0x239d,0,0,0
+3.38953139e+38,inf,0x7f80,0x7f80,0x7f80,0,0,0

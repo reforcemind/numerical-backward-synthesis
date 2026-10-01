@@ -1,7 +1,9 @@
 #include "bw_syn/verify.hpp"
 
+#include <array>
 #include <cmath>
 #include <sstream>
+#include <stdexcept>
 
 namespace bw_syn {
 
@@ -21,7 +23,11 @@ std::vector<BF16> special_bf16_values() {
 }
 
 std::vector<BF16> boundary_bf16_values() {
-  std::vector<BF16> v = special_bf16_values();
+  std::vector<BF16> v = {BF16::zero(false),
+                         BF16::zero(true),
+                         BF16::min_subnormal(),
+                         BF16::min_normal(),
+                         BF16::max_finite()};
 
   for (double x : {0.0, 1.0, 2.0, 8.0, 16.0, 20.0, 40.0, 44.0, 45.0, 46.0, 50.0, 60.0, 80.0}) {
     v.push_back(BF16::from_f64(x));
@@ -78,6 +84,19 @@ ReducedDomain build_reduced_domain(BackwardKind kind,
 }
 
 VerifyReport verify_kernel(const KernelFn& kernel, const VerifyConfig& cfg) {
+  const int modes = static_cast<int>(cfg.use_reduced_significand_domain) +
+                    static_cast<int>(cfg.exhaustive_x) + static_cast<int>(cfg.exhaustive_g) +
+                    static_cast<int>(cfg.paired_bit_permutations > 0);
+  if (modes > 1)
+    throw std::invalid_argument("choose one verification domain mode");
+  if (cfg.paired_bit_permutations < 0 || cfg.paired_bit_permutations > 3)
+    throw std::invalid_argument("paired_bit_permutations must be between 0 and 3");
+  if (cfg.exhaustive_x && cfg.fixed_g_values.empty())
+    throw std::invalid_argument("exhaustive_x requires fixed_g_values");
+  if (cfg.exhaustive_g && cfg.fixed_x_values.empty())
+    throw std::invalid_argument("exhaustive_g requires fixed_x_values");
+  if (cfg.use_reduced_significand_domain && cfg.significand_samples <= 0)
+    throw std::invalid_argument("reduced domain requires positive significand_samples");
   VerifyReport rep;
   auto& c = rep.counters;
 
@@ -174,6 +193,24 @@ VerifyReport verify_kernel(const KernelFn& kernel, const VerifyConfig& cfg) {
       if (c.hit_sample_cap)
         break;
     }
+  } else if (cfg.paired_bit_permutations > 0) {
+    constexpr std::array<std::pair<std::uint32_t, std::uint32_t>, 3> maps = {
+        {{1u, 0u}, {25173u, 13849u}, {40503u, 20261u}}};
+    for (int p = 0; p < cfg.paired_bit_permutations; ++p) {
+      const auto [multiplier, offset] = maps[static_cast<size_t>(p)];
+      for (std::uint32_t bits = 0; bits < 0x10000u; ++bits) {
+        if (c.tested >= cfg.max_samples) {
+          c.hit_sample_cap = true;
+          break;
+        }
+        const auto x = BF16::from_bits(static_cast<std::uint16_t>(bits));
+        const auto g =
+            BF16::from_bits(static_cast<std::uint16_t>((multiplier * bits + offset) & 0xffffu));
+        consider(x, g);
+      }
+      if (c.hit_sample_cap)
+        break;
+    }
   } else {
     auto xs = boundary_bf16_values();
     auto gs = boundary_bf16_values();
@@ -199,8 +236,7 @@ VerifyReport verify_kernel(const KernelFn& kernel, const VerifyConfig& cfg) {
   const std::uint64_t fails =
       c.fail_ulp + c.false_zeros + c.false_infs + c.fail_sign + c.fail_exception;
 
-  const bool exhaustive = cfg.exhaustive_x || cfg.exhaustive_g;
-  rep.ok = (fails == 0) && (c.tested > 0) && !(exhaustive && c.hit_sample_cap);
+  rep.ok = (fails == 0) && (c.tested > 0) && !c.hit_sample_cap;
 
   std::ostringstream os;
   os << "verify kind=" << backward_kind_name(cfg.kind) << " tested=" << c.tested

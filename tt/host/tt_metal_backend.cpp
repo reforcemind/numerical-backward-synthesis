@@ -14,6 +14,8 @@
 #if __has_include(<tt-metalium/host_api.hpp>)
 #include <tt-metalium/device.hpp>
 #include <tt-metalium/host_api.hpp>
+#include <tt-metalium/tt_metal.hpp>
+#define BW_SYN_METALIUM_HEADERS 1
 #elif __has_include("tt_metal/host_api.hpp")
 #include "tt_metal/detail/tt_metal.hpp"
 #include "tt_metal/host_api.hpp"
@@ -26,6 +28,12 @@ namespace {
 
 namespace fs = std::filesystem;
 namespace metal = tt::tt_metal;
+
+#if defined(BW_SYN_METALIUM_HEADERS)
+using MetalDevice = metal::IDevice;
+#else
+using MetalDevice = metal::Device;
+#endif
 
 constexpr std::uint32_t kTileBytes = 2048;
 
@@ -48,7 +56,7 @@ std::string kernel_file(const char* rel) {
 
 std::string compute_kernel_path(TtKernelKind kind) {
   switch (kind) {
-  case TtKernelKind::ScaleSeparated:
+  case TtKernelKind::Factored:
     return kernel_file("tt/kernels/compute/tanh_bw_scale_separated.cpp");
   case TtKernelKind::BaselineMaterialize:
     return kernel_file("tt/kernels/compute/tanh_bw_baseline.cpp");
@@ -58,11 +66,11 @@ std::string compute_kernel_path(TtKernelKind kind) {
 
 // Prefer detail::LaunchProgram on classic pins; swap to EnqueueProgram+Finish when
 // locking a metalium SHA that exposes the CQ API (document SHA in tt/pin/).
-void enqueue_or_launch(metal::Device* device, metal::Program& program) {
+void enqueue_or_launch(MetalDevice* device, metal::Program& program) {
   metal::detail::LaunchProgram(device, program);
 }
 
-std::vector<BF16> run_on_device(metal::Device* device,
+std::vector<BF16> run_on_device(MetalDevice* device,
                                 TtKernelKind kind,
                                 const std::vector<BF16>& xs,
                                 const std::vector<BF16>& gs) {
@@ -99,7 +107,7 @@ std::vector<BF16> run_on_device(metal::Device* device,
 
   const tt::DataFormat df = tt::DataFormat::Float16_b;
   auto make_cb = [&](std::uint32_t idx) {
-    metal::CircularBufferConfig cbc(kTileBytes, {{idx, {df, 1}}});
+    metal::CircularBufferConfig cbc(kTileBytes, {{idx, df}});
     cbc.set_page_size(idx, kTileBytes);
     metal::CreateCircularBuffer(program, core, cbc);
   };
@@ -127,9 +135,8 @@ std::vector<BF16> run_on_device(metal::Device* device,
                           compute_kernel_path(kind),
                           core,
                           metal::ComputeConfig{.math_fidelity = metal::MathFidelity::HiFi4,
-                                               .fp32_dest_acc_en = false,
-                                               .math_approx_mode = false,
-                                               .defines = {{"BW_SYN_TT_DEVICE", "1"}}});
+                                               .fp32_dest_acc_en = true,
+                                               .math_approx_mode = false});
 
   metal::SetRuntimeArgs(program,
                         reader,
@@ -148,13 +155,19 @@ std::vector<BF16> run_on_device(metal::Device* device,
   const auto* yb = reinterpret_cast<const std::uint16_t*>(y_words.data());
   std::vector<BF16> out;
   out.reserve(n_tiles);
-  for (std::uint32_t t = 0; t < n_tiles; ++t)
-    out.push_back(BF16::from_bits(yb[t * elems]));
+  for (std::uint32_t t = 0; t < n_tiles; ++t) {
+    const auto first = yb[t * elems];
+    for (std::uint32_t i = 1; i < elems; ++i)
+      if (yb[t * elems + i] != first)
+        throw std::runtime_error("nonuniform output in constant-input device tile " +
+                                 std::to_string(t));
+    out.push_back(BF16::from_bits(first));
+  }
   return out;
 }
 
-metal::Device* as_device(void* p) {
-  return static_cast<metal::Device*>(p);
+MetalDevice* as_device(void* p) {
+  return static_cast<MetalDevice*>(p);
 }
 
 } // namespace

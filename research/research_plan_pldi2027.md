@@ -1,5 +1,10 @@
 # PLDI 2027 research plan
 
+The [PLDI 2027 research-papers page](https://pldi27.sigplan.org/track/pldi-2027-papers)
+lists **12 November 2026, AoE** as the submission deadline. As of 1 October 2026,
+that page has no paper-format instructions; the LaTeX draft uses the PLDI 2026
+review style provisionally.
+
 ## Positioning
 
 **Not:** “An optimized Tenstorrent tanh kernel.”
@@ -49,7 +54,18 @@ Scale separation / scaled special functions alone (GSL, etc.). Novelty requires 
 | 7 | Sigmoid via same framework |
 | 8 | Broader eval / paper |
 
-**Phase 2 status (host):** GO - scale-separated matches contract; baseline shows false zeros.
+**Host status (1 October 2026):** The standalone scale-separated helper matches
+the sampled host contract and the derivative-FTZ model has false zeros. Host
+synthesis now deduplicates 32 settings to 10 reachable IRs per function and
+selects one of two programs passing the boundary sample for both tanh and
+sigmoid. Fixed-axis and paired-bit BF16 checks and a 952-pair high-precision probe
+check pass. The emitter rejects scale and rounding nodes it cannot preserve;
+the hand-written device factorization has not been run on pinned hardware.
+An IR matching its unguarded expression passes 2,601 finite boundary pairs but
+fails eight of 3,721 pairs with special inputs. The device candidate now has a
+tile-wide guard for finite x and infinite g, and its ten-case smoke set includes
+one of those cases. The guard and full tile sequence remain unmeasured on device.
+The paper gate remains open for generated-device evidence and same-task baselines.
 
 ## PLDI emphasis hierarchy
 

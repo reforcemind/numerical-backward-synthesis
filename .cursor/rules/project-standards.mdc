@@ -13,5 +13,5 @@ alwaysApply: true
 - Prefer small research IR; no LLVM/MLIR/RL/LLM unless forced by experiment.
 - Update results tables with host/device labels separately.
 - Before large claims or merges, consult roles in `AGENTS.md`.
-- Before writing code: walk the **Ladder** (YAGNI -> reuse -> stdlib -> min that works). See `docs/agents/CODE_STANDARDS.md` / Code Standards agent.
+- Before writing code: walk the **Ladder** (YAGNI -> reuse -> stdlib -> min that works). See `.cursor/CODE_STANDARDS.md` / Code Standards agent.
 - No unused symbols; no restating comments; no decorative banners; propose new structure before creating it.

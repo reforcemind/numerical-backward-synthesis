@@ -17,7 +17,7 @@ enum class RangeReduction {
 };
 
 enum class EvalStrategy {
-  DirectMaterialize, // verify uses host FTZ baseline model, not IR round-only
+  DirectMaterialize, // IR rounds and flushes the derivative before multiplication
   ScaleSeparated,
 };
 

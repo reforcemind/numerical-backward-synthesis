@@ -44,5 +44,22 @@ Program ir_scale_separated() {
   return p;
 }
 
+Program ir_factored() {
+  Program p;
+  p.name = "tanh_bw_factored_g_h_h";
+  const int x = p.add(Node{OpKind::InputX});
+  const int g = p.add(Node{OpKind::InputG});
+  const int ax = p.add(Node{OpKind::Abs, {x}});
+  const int e = p.add(Node{OpKind::Exp, {p.add(Node{OpKind::Neg, {ax}})}});
+  const int one = p.add(Node{OpKind::ConstF64, {}, 1.0});
+  const int two = p.add(Node{OpKind::ConstF64, {}, 2.0});
+  const int den = p.add(Node{OpKind::Add, {one, p.add(Node{OpKind::Mul, {e, e}})}});
+  const int h = p.add(Node{OpKind::Div, {p.add(Node{OpKind::Mul, {two, e}}), den}});
+  const int gh = p.add(Node{OpKind::Mul, {g, h}});
+  const int product = p.add(Node{OpKind::Mul, {gh, h}});
+  p.result = p.add(Node{OpKind::RoundBF16, {product}});
+  return p;
+}
+
 } // namespace tanh_bw
 } // namespace bw_syn

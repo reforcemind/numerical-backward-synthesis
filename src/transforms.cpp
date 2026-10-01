@@ -37,7 +37,10 @@ int unwrap_round(const Program& p, int idx) {
   if (idx < 0 || idx >= static_cast<int>(p.nodes.size()))
     return idx;
   const auto& n = p.nodes[static_cast<size_t>(idx)];
-  return (n.op == OpKind::RoundBF16 && !n.args.empty()) ? n.args[0] : idx;
+  if (n.op == OpKind::FlushBF16 && !n.args.empty())
+    idx = n.args[0];
+  const auto& inner = p.nodes[static_cast<size_t>(idx)];
+  return (inner.op == OpKind::RoundBF16 && !inner.args.empty()) ? inner.args[0] : idx;
 }
 
 struct MulPattern {
@@ -64,11 +67,13 @@ MulPattern find_g_mul_deriv(const Program& p) {
   const int b = mul.args[1];
   if (is_input_g(p, a)) {
     pat.g_idx = a;
-    pat.d_was_rounded = p.nodes[static_cast<size_t>(b)].op == OpKind::RoundBF16;
+    pat.d_was_rounded = p.nodes[static_cast<size_t>(b)].op == OpKind::RoundBF16 ||
+                        p.nodes[static_cast<size_t>(b)].op == OpKind::FlushBF16;
     pat.d_idx = unwrap_round(p, b);
   } else if (is_input_g(p, b)) {
     pat.g_idx = b;
-    pat.d_was_rounded = p.nodes[static_cast<size_t>(a)].op == OpKind::RoundBF16;
+    pat.d_was_rounded = p.nodes[static_cast<size_t>(a)].op == OpKind::RoundBF16 ||
+                        p.nodes[static_cast<size_t>(a)].op == OpKind::FlushBF16;
     pat.d_idx = unwrap_round(p, a);
   } else {
     return pat;

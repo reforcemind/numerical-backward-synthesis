@@ -9,7 +9,7 @@
 namespace bw_syn {
 
 enum class TtKernelKind {
-  ScaleSeparated,
+  Factored,
   BaselineMaterialize,
 };
 

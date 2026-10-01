@@ -1,7 +1,7 @@
 ---
 description: Numerical methods researcher role for contracts and verification
 alwaysApply: false
-globs: "{include/bw_syn/**,src/**,docs/numerical_semantics.md,docs/paper/**}"
+globs: "{include/bw_syn/**,src/**,research/numerical_semantics.md,docs/*.tex}"
 ---
 
 # Role: Numerical Researcher
@@ -21,4 +21,4 @@ You are a floating-point researcher coauthoring this work. Mathematical honesty 
 
 - Prefer precise hedges over marketing language.
 - Add tests for every semantics change.
-- Update `docs/numerical_semantics.md` and appendix together.
+- Update `research/numerical_semantics.md` and the paper together.

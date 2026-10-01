@@ -1,6 +1,7 @@
 #include "bw_syn/ir.hpp"
 
 #include <cmath>
+#include <functional>
 #include <sstream>
 #include <stdexcept>
 
@@ -64,6 +65,10 @@ std::string op_kind_name(OpKind k) {
     return "Reconstruct";
   case OpKind::RoundBF16:
     return "RoundBF16";
+  case OpKind::FlushBF16:
+    return "FlushBF16";
+  case OpKind::PositiveDerivativeInf:
+    return "PositiveDerivativeInf";
   case OpKind::Clamp:
     return "Clamp";
   case OpKind::Copysign:
@@ -96,6 +101,29 @@ std::string Program::dump() const {
   return os.str();
 }
 
+std::vector<int> reachable_nodes(const Program& p) {
+  if (p.result < 0 || p.result >= static_cast<int>(p.nodes.size()))
+    throw std::invalid_argument("Program has invalid result index");
+  std::vector<unsigned char> state(p.nodes.size(), 0);
+  std::vector<int> order;
+  std::function<void(int)> visit = [&](int index) {
+    if (index < 0 || index >= static_cast<int>(p.nodes.size()))
+      throw std::invalid_argument("Program has invalid argument index");
+    auto& s = state[static_cast<size_t>(index)];
+    if (s == 1)
+      throw std::invalid_argument("Program contains a cycle");
+    if (s == 2)
+      return;
+    s = 1;
+    for (int arg : p.nodes[static_cast<size_t>(index)].args)
+      visit(arg);
+    s = 2;
+    order.push_back(index);
+  };
+  visit(p.result);
+  return order;
+}
+
 namespace {
 
 struct Slot {
@@ -108,6 +136,7 @@ Slot eval_node(const Program& p,
                int idx,
                double x,
                double g,
+               RoundMode round,
                std::vector<Slot>& memo,
                std::vector<char>& seen) {
   if (seen[static_cast<size_t>(idx)])
@@ -115,7 +144,9 @@ Slot eval_node(const Program& p,
   const Node& n = p.nodes[static_cast<size_t>(idx)];
   Slot out;
 
-  auto arg = [&](int k) { return eval_node(p, n.args[static_cast<size_t>(k)], x, g, memo, seen); };
+  auto arg = [&](int k) {
+    return eval_node(p, n.args[static_cast<size_t>(k)], x, g, round, memo, seen);
+  };
 
   switch (n.op) {
   case OpKind::InputX:
@@ -236,7 +267,17 @@ Slot eval_node(const Program& p,
     break;
   }
   case OpKind::RoundBF16: {
-    out.f = round_to_bf16(arg(0).f).to_f64();
+    out.f = round_to_bf16(arg(0).f, round).to_f64();
+    break;
+  }
+  case OpKind::FlushBF16: {
+    out.f = flush_subnormals(BF16::from_f64(arg(0).f)).to_f64();
+    break;
+  }
+  case OpKind::PositiveDerivativeInf: {
+    const Slot sx = arg(0);
+    const Slot sg = arg(1);
+    out.f = std::isfinite(sx.f) && std::isinf(sg.f) ? sg.f : arg(2).f;
     break;
   }
   case OpKind::Clamp: {
@@ -256,16 +297,16 @@ Slot eval_node(const Program& p,
 
 } // namespace
 
-EvalResult eval_program(const Program& p, double x, double g) {
+EvalResult eval_program(const Program& p, double x, double g, RoundMode round) {
   if (p.result < 0 || p.result >= static_cast<int>(p.nodes.size())) {
     throw std::runtime_error("Program has invalid result index");
   }
   std::vector<Slot> memo(p.nodes.size());
   std::vector<char> seen(p.nodes.size(), 0);
-  Slot s = eval_node(p, p.result, x, g, memo, seen);
+  Slot s = eval_node(p, p.result, x, g, round, memo, seen);
   EvalResult r;
   r.value_f64 = s.f;
-  r.value_bf16 = round_to_bf16(s.f);
+  r.value_bf16 = round_to_bf16(s.f, round);
   return r;
 }
 

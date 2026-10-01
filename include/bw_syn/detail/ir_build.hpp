@@ -23,7 +23,8 @@ inline int add_scale_product(Program& p, int g, int d) {
 
 inline int add_direct_product(Program& p, int g, int d) {
   const int dr = p.add(Node{OpKind::RoundBF16, {d}});
-  const int prod = p.add(Node{OpKind::Mul, {g, dr}});
+  const int flushed = p.add(Node{OpKind::FlushBF16, {dr}});
+  const int prod = p.add(Node{OpKind::Mul, {g, flushed}});
   return p.add(Node{OpKind::RoundBF16, {prod}});
 }
 

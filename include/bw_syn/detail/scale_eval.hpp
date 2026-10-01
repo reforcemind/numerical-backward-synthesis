@@ -14,7 +14,7 @@ inline BF16
 eval_ir_under_contract(const Program& prog, BF16 x, BF16 g, const NumericalContract& c) {
   if (x.is_nan() || g.is_nan())
     return BF16::qnan();
-  const EvalResult r = eval_program(prog, x.to_f64(), g.to_f64());
+  const EvalResult r = eval_program(prog, x.to_f64(), g.to_f64(), c.output_round);
   BF16 out = r.value_bf16;
   if (c.flush_output_subnormals)
     out = flush_subnormals(out);

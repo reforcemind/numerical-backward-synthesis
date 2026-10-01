@@ -12,56 +12,6 @@ std::string v(int i) {
   return "v" + std::to_string(i);
 }
 
-int frexp_src(const Program& p, int i) {
-  if (i < 0 || i >= static_cast<int>(p.nodes.size()))
-    return -1;
-  const Node& n = p.nodes[static_cast<size_t>(i)];
-  if ((n.op == OpKind::FrexpMant || n.op == OpKind::FrexpExp) && !n.args.empty()) {
-    const int f = n.args[0];
-    if (f >= 0 && p.nodes[static_cast<size_t>(f)].op == OpKind::Frexp &&
-        !p.nodes[static_cast<size_t>(f)].args.empty())
-      return p.nodes[static_cast<size_t>(f)].args[0];
-  }
-  return -1;
-}
-
-int peel(const Program& p, int i) {
-  while (i >= 0 && i < static_cast<int>(p.nodes.size())) {
-    const Node& n = p.nodes[static_cast<size_t>(i)];
-    if ((n.op == OpKind::RoundBF16 || n.op == OpKind::Normalize || n.op == OpKind::FrexpMant ||
-         n.op == OpKind::Frexp || n.op == OpKind::Reconstruct) &&
-        !n.args.empty()) {
-      i = n.args[0];
-      continue;
-    }
-    return i;
-  }
-  return i;
-}
-
-Program lower(Program p) {
-  for (auto& n : p.nodes) {
-    if (n.op == OpKind::ScaleMul && n.args.size() == 2) {
-      const int a = frexp_src(p, n.args[0]);
-      const int b = frexp_src(p, n.args[1]);
-      if (a >= 0 && b >= 0) {
-        n.op = OpKind::Mul;
-        n.args = {a, b};
-      }
-    }
-  }
-  for (auto& n : p.nodes) {
-    if (n.op == OpKind::Reconstruct && n.args.size() == 2) {
-      const int m = peel(p, n.args[0]);
-      if (m >= 0 && (p.nodes[static_cast<size_t>(m)].op == OpKind::Mul ||
-                     p.nodes[static_cast<size_t>(m)].op == OpKind::ScaleMul))
-        n = p.nodes[static_cast<size_t>(m)];
-    }
-  }
-  p.result = peel(p, p.result);
-  return p;
-}
-
 std::string emit_expr(const Program& p, int i, std::vector<char>& done, std::ostringstream& out) {
   if (done[static_cast<size_t>(i)])
     return v(i);
@@ -95,57 +45,33 @@ std::string emit_expr(const Program& p, int i, std::vector<char>& done, std::ost
     rhs = a(0) + " - " + a(1);
     break;
   case OpKind::Mul:
-  case OpKind::ScaleMul:
     rhs = a(0) + " * " + a(1);
     break;
   case OpKind::Div:
-    rhs = a(0) + " / " + a(1);
-    break;
   case OpKind::Max:
-    rhs = "sfpi::max(" + a(0) + ", " + a(1) + ")";
-    break;
   case OpKind::Min:
-    rhs = "sfpi::min(" + a(0) + ", " + a(1) + ")";
-    break;
   case OpKind::Exp:
-    rhs = "sfpi::exp(" + a(0) + ")";
-    break;
   case OpKind::Exp2:
-    rhs = "sfpi::exp2(" + a(0) + ")";
-    break;
   case OpKind::Sqrt:
-    rhs = "sfpi::sqrt(" + a(0) + ")";
-    break;
   case OpKind::Tanh:
-    rhs = "sfpi::tanh(" + a(0) + ")";
-    break;
   case OpKind::Log:
-    rhs = "sfpi::log(" + a(0) + ")";
-    break;
   case OpKind::Log2:
-    rhs = "sfpi::log2(" + a(0) + ")";
-    break;
   case OpKind::Select:
-    rhs = "((" + a(0) + " != 0) ? (" + a(1) + ") : (" + a(2) + "))";
-    break;
   case OpKind::Clamp:
-    rhs = "sfpi::min(" + a(2) + ", sfpi::max(" + a(0) + ", " + a(1) + "))";
-    break;
   case OpKind::Copysign:
-    rhs = "sfpi::copysign(" + a(0) + ", " + a(1) + ")";
-    break;
   case OpKind::Frexp:
   case OpKind::FrexpMant:
+  case OpKind::FrexpExp:
+  case OpKind::ScaleMul:
+  case OpKind::AddExp:
   case OpKind::Normalize:
   case OpKind::RoundBF16:
+  case OpKind::FlushBF16:
+  case OpKind::PositiveDerivativeInf:
   case OpKind::Ldexp:
   case OpKind::Reconstruct:
-    rhs = a(0);
-    break;
-  case OpKind::FrexpExp:
-  case OpKind::AddExp:
-    rhs = "vFloat(0.0f)";
-    break;
+    throw std::runtime_error("sfpu: unsupported " + op_kind_name(n.op) + " at v" +
+                             std::to_string(i));
   default:
     throw std::runtime_error(std::string("sfpu: ") + op_kind_name(n.op));
   }
@@ -157,10 +83,10 @@ std::string emit_expr(const Program& p, int i, std::vector<char>& done, std::ost
 } // namespace
 
 std::string emit_sfpi_cpp(const Program& p, const EmitOptions& opt) {
-  const Program q = lower(p);
-  std::vector<char> done(q.nodes.size(), 0);
+  (void)reachable_nodes(p);
+  std::vector<char> done(p.nodes.size(), 0);
   std::ostringstream body;
-  const std::string ret = emit_expr(q, q.result, done, body);
+  const std::string ret = emit_expr(p, p.result, done, body);
   std::ostringstream os;
   os << "// SKETCH: not linked into tt-metal. Device kernels live under tt/kernels/compute/.\n"
      << "#include \"sfpi.h\"\n\nusing namespace sfpi;\n\n"

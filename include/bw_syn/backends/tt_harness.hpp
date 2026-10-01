@@ -5,6 +5,7 @@
 #include "bw_syn/oracle.hpp"
 
 #include <cstdint>
+#include <limits>
 #include <optional>
 #include <string>
 #include <vector>
@@ -13,6 +14,9 @@ namespace bw_syn {
 namespace tt_harness {
 
 enum class DeviceMode { HostSim, TtMetal };
+
+inline constexpr int kDeviceWarmupRuns = 5;
+inline constexpr int kDeviceMeasuredRuns = 20;
 
 struct DeviceInfo {
   DeviceMode mode{DeviceMode::HostSim};
@@ -39,7 +43,8 @@ inline std::vector<CaseSpec> critical_cases() {
           {-45.f, 4.f},
           {45.f, -4.f},
           {0.f, 1.f},
-          {20.f, 1.f}};
+          {20.f, 1.f},
+          {BF16::max_finite().to_f32(), std::numeric_limits<float>::infinity()}};
 }
 
 struct CaseResult {
@@ -61,7 +66,9 @@ struct HardwareRunReport {
   std::optional<std::uint64_t> cycles_per_tile;
   std::optional<int> insn_count;
   std::optional<int> reg_count;
-  std::optional<bool> ftz_observed;
+  std::optional<bool> baseline_false_zero_observed;
+  int device_warmup_runs{0};
+  int device_measured_runs{0};
 };
 
 HardwareRunReport run_critical_tanh(DeviceMode prefer = DeviceMode::HostSim);

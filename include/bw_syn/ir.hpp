@@ -37,6 +37,9 @@ enum class OpKind {
   Normalize,
   Reconstruct,
   RoundBF16,
+  FlushBF16,
+  // Valid only when the analytic derivative is strictly positive at finite x.
+  PositiveDerivativeInf,
   Clamp,
   Copysign,
 };
@@ -63,12 +66,14 @@ struct Program {
 };
 
 std::string op_kind_name(OpKind k);
+std::vector<int> reachable_nodes(const Program& p);
 
 struct EvalResult {
   double value_f64{0.0};
   BF16 value_bf16{};
 };
 
-EvalResult eval_program(const Program& p, double x, double g);
+EvalResult
+eval_program(const Program& p, double x, double g, RoundMode round = RoundMode::ToNearestEven);
 
 } // namespace bw_syn

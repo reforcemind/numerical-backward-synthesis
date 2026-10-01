@@ -1,5 +1,5 @@
 kind,impl,tested,pass,false_zeros,max_ulp,ok
-tanh_backward,scale_sep,4356,4356,0,0,1
-tanh_backward,baseline,4356,4156,200,1,0
-sigmoid_backward,scale_sep,4356,4356,0,0,1
-sigmoid_backward,baseline,4356,4352,4,1,0
+tanh_backward,scale_sep,3721,3721,0,0,1
+tanh_backward,baseline,3721,3529,192,1,0
+sigmoid_backward,scale_sep,3721,3721,0,0,1
+sigmoid_backward,baseline,3721,3717,4,1,0

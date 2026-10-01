@@ -14,17 +14,30 @@ BF16 scale_separated(BF16 x, BF16 g, const NumericalContract& c, double alpha) {
   return detail::scale_separated_product(BackwardKind::Elu, x, g, c, alpha);
 }
 
-Program ir_scale_separated(double alpha) {
-  Program p;
-  p.name = "elu_bw_scale_separated";
-  const int x = p.add(Node{OpKind::InputX});
-  const int g = p.add(Node{OpKind::InputG});
+static int elu_deriv(Program& p, int x, double alpha) {
   const int a = p.add(Node{OpKind::ConstF64, {}, alpha});
   const int zero = p.add(Node{OpKind::ConstF64, {}, 0.0});
   const int one = p.add(Node{OpKind::ConstF64, {}, 1.0});
   const int aex = p.add(Node{OpKind::Mul, {a, p.add(Node{OpKind::Exp, {x}})}});
   const int xpos = p.add(Node{OpKind::Max, {x, zero}});
-  p.result = detail::add_scale_product(p, g, p.add(Node{OpKind::Select, {xpos, one, aex}}));
+  return p.add(Node{OpKind::Select, {xpos, one, aex}});
+}
+
+Program ir_direct(double alpha) {
+  Program p;
+  p.name = "elu_bw_direct";
+  const int x = p.add(Node{OpKind::InputX});
+  const int g = p.add(Node{OpKind::InputG});
+  p.result = detail::add_direct_product(p, g, elu_deriv(p, x, alpha));
+  return p;
+}
+
+Program ir_scale_separated(double alpha) {
+  Program p;
+  p.name = "elu_bw_scale_separated";
+  const int x = p.add(Node{OpKind::InputX});
+  const int g = p.add(Node{OpKind::InputG});
+  p.result = detail::add_scale_product(p, g, elu_deriv(p, x, alpha));
   return p;
 }
 

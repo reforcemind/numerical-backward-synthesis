@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
 int main(int argc, char** argv) {
@@ -50,6 +51,7 @@ int main(int argc, char** argv) {
   }
   if (cmd == "synth") {
     BackwardKind kind = BackwardKind::Tanh;
+    bool emit = false;
     for (int i = 2; i < argc; ++i) {
       std::string a = argv[i];
       if (a == "--sigmoid")
@@ -58,6 +60,8 @@ int main(int argc, char** argv) {
         kind = BackwardKind::Erf;
       if (a == "--elu")
         kind = BackwardKind::Elu;
+      if (a == "--emit")
+        emit = true;
     }
     SynthConfig cfg;
     cfg.kind = kind;
@@ -66,23 +70,45 @@ int main(int argc, char** argv) {
     cfg.verify_cfg.contract = cfg.contract;
     cfg.verify_cfg.max_samples = 20000;
     auto r = synthesize(cfg);
+    std::cout << "host kind=" << backward_kind_name(kind) << " settings=" << r.search_space_size
+              << " unique=" << r.candidates_built << " passing=" << r.candidates_verified
+              << " scope=boundary_with_specials";
+    if (r.found)
+      std::cout << " best=" << r.best.id << " max_ulp=" << r.best.verify.counters.max_ulp;
+    std::cout << "\n";
     if (!r.found)
       return 2;
+    if (!emit)
+      return 0;
+    std::string source;
+    try {
+      source = sfpu::emit_sfpi_cpp(r.best.program, {backward_kind_name(kind) + "_syn"});
+    } catch (const std::runtime_error& ex) {
+      std::cerr << ex.what() << "\n";
+      return 1;
+    }
     namespace fs = std::filesystem;
     fs::create_directories("kernels/generated");
     std::ofstream ofs(std::string("kernels/generated/") + backward_kind_name(kind) + "_best.cpp");
-    ofs << sfpu::emit_sfpi_cpp(r.best.program, {backward_kind_name(kind) + "_syn"});
+    ofs << source;
     return ofs ? 0 : 1;
   }
   if (cmd == "emit") {
     std::string which = argc > 2 ? argv[2] : "tanh";
     Program p =
         which == "sigmoid" ? sigmoid_bw::ir_scale_separated() : tanh_bw::ir_scale_separated();
+    std::string source;
+    try {
+      source = sfpu::emit_sfpi_cpp(p, {which + "_bw_scale_separated"});
+    } catch (const std::runtime_error& ex) {
+      std::cerr << ex.what() << "\n";
+      return 1;
+    }
     namespace fs = std::filesystem;
     fs::create_directories("kernels/generated");
     const std::string path = "kernels/generated/" + which + "_bw_scale_separated.cpp";
     std::ofstream ofs(path);
-    ofs << sfpu::emit_sfpi_cpp(p, {which + "_bw_scale_separated"});
+    ofs << source;
     return ofs ? 0 : 1;
   }
   if (cmd == "tt") {

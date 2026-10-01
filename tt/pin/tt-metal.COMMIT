@@ -1,3 +1,3 @@
 # Pin the tt-metal revision used for device measurements.
-# Replace UNSET with a 40-char SHA before publishing hardware tables.
+# The one-shot Wormhole script replaces UNSET with the checkout SHA before a device run.
 UNSET

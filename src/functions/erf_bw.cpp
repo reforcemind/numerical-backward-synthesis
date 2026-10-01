@@ -14,15 +14,28 @@ BF16 scale_separated(BF16 x, BF16 g, const NumericalContract& c) {
   return detail::scale_separated_product(BackwardKind::Erf, x, g, c);
 }
 
+static int erf_deriv(Program& p, int x) {
+  const int e =
+      p.add(Node{OpKind::Exp, {p.add(Node{OpKind::Neg, {p.add(Node{OpKind::Mul, {x, x}})}})}});
+  const int k = p.add(Node{OpKind::ConstF64, {}, 2.0 / 1.772453850905516});
+  return p.add(Node{OpKind::Mul, {k, e}});
+}
+
+Program ir_direct() {
+  Program p;
+  p.name = "erf_bw_direct";
+  const int x = p.add(Node{OpKind::InputX});
+  const int g = p.add(Node{OpKind::InputG});
+  p.result = detail::add_direct_product(p, g, erf_deriv(p, x));
+  return p;
+}
+
 Program ir_scale_separated() {
   Program p;
   p.name = "erf_bw_scale_separated";
   const int x = p.add(Node{OpKind::InputX});
   const int g = p.add(Node{OpKind::InputG});
-  const int e =
-      p.add(Node{OpKind::Exp, {p.add(Node{OpKind::Neg, {p.add(Node{OpKind::Mul, {x, x}})}})}});
-  const int k = p.add(Node{OpKind::ConstF64, {}, 2.0 / 1.772453850905516});
-  p.result = detail::add_scale_product(p, g, p.add(Node{OpKind::Mul, {k, e}}));
+  p.result = detail::add_scale_product(p, g, erf_deriv(p, x));
   return p;
 }
 

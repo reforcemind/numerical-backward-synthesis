@@ -11,7 +11,7 @@ results, numerical guarantees, or merging non-trivial code.
 | **Code Standards** | `.cursor/rules/code-standards.mdc` | Ladder, reuse, dead code, format/lint |
 
 Always-on baseline: `.cursor/rules/project-standards.mdc`  
-Ladder details: `docs/agents/CODE_STANDARDS.md`
+Ladder details: `.cursor/CODE_STANDARDS.md`
 
 ## How to use in Cursor
 
@@ -31,10 +31,10 @@ Or `@`-mention the corresponding rule if your Cursor build supports it.
 3. Do **not** mark verification-domain reduction as sound until proved (`claimed_sound` stays false).
 4. Host results are labeled **host**; hardware results are labeled **device**.
 5. Prefer C++ for research code; Python only for optional cross-checks.
-6. Walk the **Ladder** before adding code (`docs/agents/CODE_STANDARDS.md`).
+6. Walk the **Ladder** before adding code (`.cursor/CODE_STANDARDS.md`).
 
 ## Pull-and-run path (humans)
 
-1. Host CI/smoke: `docs/HARDWARE.md` § Host
-2. Device: `docs/HARDWARE.md` § Device (requires `TT_METAL_HOME`)
+1. Host CI/smoke: `tt/HARDWARE.md` § Host
+2. Device: `tt/HARDWARE.md` § Device (requires `TT_METAL_HOME`)
 3. Standards: `experiments/scripts/check_standards.ps1` (or `.sh`)

@@ -1,3 +1,5 @@
-kind,search_space,built,verified,pareto,found,best_id,best_score,seconds
-tanh_backward,32,32,32,1,1,rr0_ev1_nm0_rc0_rd0,74,0.792559
-sigmoid_backward,32,32,32,1,1,rr0_ev1_nm0_rc0_rd0,66,0.664699
+kind,scope,search_space,built,verified,pareto,found,best_id,best_score,seconds
+tanh_backward,finite_boundary,32,10,2,1,1,rr0_ev1_nm0_rc0_rd0,66,0.017692
+tanh_backward,boundary_with_specials,32,10,2,1,1,rr0_ev1_nm0_rc0_rd0,66,0.020174
+sigmoid_backward,finite_boundary,32,10,2,1,1,rr0_ev1_nm0_rc0_rd0,58,0.015136
+sigmoid_backward,boundary_with_specials,32,10,2,1,1,rr0_ev1_nm0_rc0_rd0,58,0.018975

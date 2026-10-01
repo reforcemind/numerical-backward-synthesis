@@ -2,10 +2,11 @@
 
 Status: **related** / **orthogonal** / **baseline to cite** / **gap (this work)**.
 
-Scale separation itself is **not** novel. Claims rest on the *combination*: contract-gated
-enumeration of low-precision **backward** IR templates (scale vs materialize, round/norm
-variants), semantics-checked transforms, non-tautological verification, and selection by a
-**host** cost proxy (device selection deferred until measured rows exist).
+Scale separation itself is **not** novel. The proposed contribution is a
+contract-guided synthesis method for complete low-precision backward programs.
+The differentiation below is a hypothesis pending same-task baseline experiments
+and device evidence. Host candidates now pass sampled checks; the current cost
+model remains a **host** proxy.
 
 | Work | Venue / artifact | What it does | Overlap | Differentiation (this work) |
 |------|------------------|--------------|---------|-----------------------------|
@@ -20,22 +21,27 @@ variants), semantics-checked transforms, non-tautological verification, and sele
 | SLEEF / odd-even libm | optimized kernels | Hand-tuned math | Orthogonal | Deployment kernels, not synthesis |
 | Autograd / JAX-XLA remat | AD systems | Graph rematerialization | Orthogonal | Graph-level; do **not** fix BF16 flush of \(f'\) before \(\times g\) |
 | Scaled BLAS / extended exponents | numerics | Separate mantissa/exponent products | Representation idea | Not synthesis of backward programs under ULP/false-zero contracts |
-| TTNN / tt-metal `unary_backward` | production | Device kernels; common pattern: materialize derivative then mul | **Baseline to measure** | Motivates the false-zero; this work synthesizes/verifies alternatives. Device false-zero/FTZ numbers require a pinned `tt-metal` run (`docs/HARDWARE.md`) |
+| [TT-Metalium Wormhole tanh derivative](https://github.com/tenstorrent/tt-metal/blob/9ac55ec9be762d2ce46eec193299eb34cff2f8d7/tt_metal/hw/ckernels/wormhole_b0/metal/llk_api/llk_sfpu/ckernel_sfpu_tanh_derivative.h) | source inspected at `9ac55ec9` | Piecewise polynomial and exponential tail for `sech²`; source comments report one-BF16-ULP derivative accuracy | Strong competing derivative kernel | Compare the complete `g·sech²(x)` result and cost on the pinned revision; the source comment is not our device evidence |
+| TTNN `tanh_bw` | production | Public backward operation; implementation may change by revision | **Baseline to measure** | Run the same inputs through TTNN on the pinned build before claiming any device mismatch or advantage |
 
 ## Concrete comparison checklist (camera-ready)
 
 When writing Related Work, answer in one sentence each:
 
-1. **Herbie:** Would Herbie, given `g * sech2(x)` in BF16, invent frexp/ldexp scale separation and a final-only round policy under an explicit false-zero ban? (Expected: no; different search object and contract.)
-2. **Poseidon:** Does Poseidon’s profile+DP pipeline emit a scale-aware backward IR or only rewrite/precision-tune existing graphs? (Expected: latter.)
-3. **RLibm:** Does a correctly rounded `tanh`/`exp` help if the bug is flushing `sech2` before multiplying by `g`? (Expected: orthogonal; product structure is the issue.)
+1. **Herbie:** Run the same complete backward expressions and BF16 input sample;
+   document supported operations, search settings, numerical outputs, and cost.
+2. **Poseidon:** Compare the same expressions if its compiler pipeline supports
+   the target; document any unsupported representation or target constraint.
+3. **RLibm:** Test whether a better elementary-function approximation changes
+   final-gradient accuracy when the intermediate derivative is materialized.
 
 ## Tentative novelty (use only if table rows stay accurate)
 
-> We enumerate contract-gated backward IR templates (scale vs materialize, round/norm
-> variants), verify against a non-tautological oracle (ULP + false-zero ban), and select by a
-> **host** cost proxy. Device-aware selection and hardware FTZ claims are deferred until
-> `label=device` CSV rows exist under a pinned `tt-metal` commit.
+> We explore contract-gated backward IR templates (scale vs materialize,
+> rounding/normalization variants), compare final outputs with a host reference,
+> and rank sampled candidates by a host cost proxy. Selected tanh and sigmoid
+> host IRs pass boundary and fixed-axis BF16 checks. Whole-pair verification,
+> device-aware selection, and hardware FTZ claims require further work.
 
 ## Search log
 

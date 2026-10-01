@@ -1,0 +1,6 @@
+label,program,domain,tested,pass,max_ulp,false_zeros,false_infs,ok
+host_ir,tanh_factored_g_h_h,finite_boundary,2601,2601,0,0,0,1
+host_ir,tanh_factored_g_h_h,boundary_with_specials,3721,3713,0,0,8,0
+host_ir,tanh_factored_g_h_h,all_x_at_g_+0_4,131072,131072,0,0,0,1
+host_ir,tanh_factored_g_h_h,all_g_at_x_+0_45_90,196608,196608,0,0,0,1
+host_ir,tanh_factored_g_h_h,three_bf16_bit_permutations,196608,196606,0,0,2,0
