@@ -1,9 +1,12 @@
-bw_syn_commit=ae20db34039901d2924dd7ad32a00a7562ba3d12
+bw_syn_commit=acaa87bbe49f79d8c539a6971f14b6131364a659
 tt_metal_commit=f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee
 arch=wormhole
 device_id=0
-utc_start=2026-10-01T21:01:12Z
+utc_start=2026-10-02T14:06:37Z
 Linux wh-glx6u-02-special-ijankowski-for-reservation-238565 5.15.0-142-generic #152-Ubuntu SMP Mon May 19 10:54:31 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
 3ea4b361521110e774fdce22cd3fa6777f9bd9e12bc11d839ed3522b161234d1  tt/kernels/common/tanh_factor.h
 e968321cc4ab39cf267af4a6e59d5e14885a4e19b94ea13272a97a903c418377  tt/kernels/compute/tanh_bw_scale_separated.cpp
 eac0d9c15a5c37f1e2bc1b43fbcb80f1902ead1877887f903042edf97691056a  tt/kernels/compute/tanh_bw_baseline.cpp
+4ca3fa056dabb0c4dea35959c5b1b93cfdd1114803bb58292311abdee941523e  tt/kernels/compute/tanh_bw_tail_split4.cpp
+74b84f007194ea758a28c5bc5891684ae2590ec9e7ba39ac4a42d699e58dabc6  tt/kernels/compute/tanh_bw_vendor_derivative.cpp
+fbd782cc3b44e78883c61660687342ba92752d4fe036ef13666ba8b073520b6d  tt/kernels/compute/format_probe.cpp
