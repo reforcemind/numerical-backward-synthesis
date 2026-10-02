@@ -1,35 +1,40 @@
 # Hardware runbook - pull this repo onto a Tenstorrent machine and run
 
 This document is the pull-and-run path. Device execution requires `tt-metal`.
-The Wormhole target is known, but an on-board compile and measurement are still
-pending. The one-shot script pins the checked-out `tt-metal` SHA before building.
-Treat the first run as an API and numerical bring-up, not a completed paper experiment.
-The tile API names were checked against upstream `tt-metal` source at
-`9ac55ec9be762d2ce46eec193299eb34cff2f8d7`; this is an API reference,
-not a substitute for the SHA recorded on the Wormhole machine.
+Wormhole bring-up ran at a pinned `tt-metal` SHA, with numerical failures still
+open. The one-shot script checks that SHA before building. Treat the device
+records as diagnostics, not a completed paper experiment.
+The tile API and vendor derivative were inspected at the Wormhole pin
+`f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee`; the new kernel still needs an
+on-board compile and run.
 The first on-board results, open issues and the porting notes for pin `f9524a5f`
 are in [`research/device_bringup_wormhole.md`](../research/device_bringup_wormhole.md).
 Those measurements are diagnostic and excluded from paper performance claims.
 
 ## Next Wormhole exploration
 
-After pulling branch `wh2`, use the same `TT_METAL_HOME` and
+After pulling branch `wh3`, use the same `TT_METAL_HOME` and
 `BW_SYN_ARCH=wormhole` environment as below, with `torch` and `ttnn` optional
 for this mode:
 
 ```bash
-./tt/scripts/run_on_device.sh --explore
+./tt/scripts/run_on_device.sh --tail-timing
 ```
 
-This builds the pinned Metalium source target, checks a finite tanh tail
-candidate on BF16 inputs whose reference outputs are normal, then records raw
-BF16 transport, compute-copy, and multiply probes. The files are
-`results/hw/tail_wormhole.csv`, `results/hw/format_wormhole.csv`, and the
-matching `results/hw/*_wormhole_*.log` plus
-`results/hw/explore_provenance_wormhole.txt`. Send these files and the pinned
-`tt/pin/tt-metal.COMMIT` after the run. They are development diagnostics,
-not paper measurements. The tail candidate has no special-input guard and
-does not claim subnormal output support or full-domain correctness.
+This checks every positive BF16 `x` encoding from 4 through 88.5 for six
+gradient values, plus selected negative `x` values, before timing. It compares the
+candidate, the materialized helper, and tt-metal's tanh-derivative primitive
+multiplied by the same gradient. On a passing candidate sweep, it times 128
+recorded, exponent-spread inputs for all three kernels, then runs raw BF16
+transport and compute probes. Send `results/hw/tail_timed_wormhole.csv`,
+`results/hw/format_wormhole.csv`, `results/hw/tail_cycles_wormhole.csv`, the
+matching logs, the raw profiler CSV, and
+`results/hw/explore_provenance_wormhole.txt`. The script requires committed
+tracked source changes. These are development diagnostics, not paper
+measurements. A failing candidate sweep still writes its correctness CSV and
+format probe, but withholds the timing summary. The tail candidate has no
+special-input guard and does not claim subnormal output support or full-domain
+correctness.
 
 ## Roles
 

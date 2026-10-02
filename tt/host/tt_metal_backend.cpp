@@ -62,6 +62,8 @@ std::string compute_kernel_path(TtKernelKind kind) {
     return kernel_file("tt/kernels/compute/tanh_bw_baseline.cpp");
   case TtKernelKind::TanhTailSplit4:
     return kernel_file("tt/kernels/compute/tanh_bw_tail_split4.cpp");
+  case TtKernelKind::VendorTanhDerivative:
+    return kernel_file("tt/kernels/compute/tanh_bw_vendor_derivative.cpp");
   case TtKernelKind::ProbeComputeCopy:
   case TtKernelKind::ProbeComputeMul:
     return kernel_file("tt/kernels/compute/format_probe.cpp");

@@ -1,8 +1,8 @@
 # Wormhole device bring-up: tanh backward (first measurements)
 
 **Diagnostic record only.** This run is excluded from paper performance tables.
-The `wh2` exploration replaces its ten-tile workload with a finite tail sweep
-and adds a format-path probe; those results have not been run on hardware.
+The later `wh2` profiler trace is described below. Its correctness and format
+probe CSVs were not included in the uploaded commit.
 
 First on-board run of the two tanh-backward compute kernels and the TTNN
 `tanh_bw` baseline. Everything here is **device**-labelled. It comes from one
@@ -244,3 +244,22 @@ cd ~/tmp/numerical-backward-synthesis
 Do not reuse a tt-metal build directory that was configured with
 `--disable-profiler`. `ENABLE_TRACY=OFF` sticks in the CMake cache, and the run then
 fails with exit 4 (no profiler log).
+
+## Run 2: tail profiler trace only
+
+Commit `acefed0` added a raw Wormhole profiler trace at tt-metal pin
+`f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee`. It contains 32 paired
+single-core launches per kernel: seven correctness batches, five warmups, and
+20 timed batches of 128 tiles. Replaying it with the launch-count and ordering
+checks in `summarize_tt_profiler` gives median 400,378.5 cycles for the tail
+candidate and 526,849 cycles for the materialized baseline (3,128 and 4,116
+cycles per tile, respectively, after rounding). The candidate's zone is about
+24% shorter in this diagnostic batch. These are kernel-zone cycles, not
+end-to-end latency or a paper speedup.
+
+The commit has no `tail_timed_wormhole.csv` or `format_wormhole.csv`. The trace
+cannot establish whether either kernel met the numerical contract, which inputs
+were timed, or where BF16 subnormals disappeared. The `wh3` harness gates timing
+on the full normal-output sweep, records the timed input selection, checks the
+profiler launch order, and compares the pinned tt-metal tanh-derivative primitive
+multiplied by the same gradient. A fresh device run is required for those claims.

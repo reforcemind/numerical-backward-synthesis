@@ -80,9 +80,12 @@ struct TailCaseResult {
   BF16 oracle;
   BF16 observed;
   BF16 baseline;
+  std::optional<BF16> vendor;
   bool normal_output{false};
   bool pass{false};
   bool baseline_pass{false};
+  std::optional<bool> vendor_pass;
+  bool timed_input{false};
 };
 
 struct TailRunReport {
@@ -90,6 +93,7 @@ struct TailRunReport {
   std::vector<TailCaseResult> cases;
   std::size_t normal_outputs{0};
   std::size_t baseline_normal_passes{0};
+  std::optional<std::size_t> vendor_normal_passes;
   bool all_normal_outputs_pass{false};
   // Timed runs reuse one fixed batch of normal-output tiles for both kernels.
   std::size_t timing_tiles{0};

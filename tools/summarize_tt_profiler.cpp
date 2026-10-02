@@ -2,7 +2,6 @@
 #include "bw_syn/csv_io.hpp"
 
 #include <algorithm>
-#include <array>
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
@@ -51,6 +50,9 @@ using Sample = std::pair<std::uint64_t, std::uint64_t>;
 // spans the earliest TRISC start to the latest TRISC end.
 std::vector<Sample> launches(const std::string& zone,
                              const std::map<std::string, std::vector<Interval>>& by_risc) {
+  if (by_risc.size() != 3 || !by_risc.contains("TRISC_0") || !by_risc.contains("TRISC_1") ||
+      !by_risc.contains("TRISC_2"))
+    throw std::runtime_error("missing compute RISC profiler zones for " + zone);
   std::size_t count = 0;
   for (const auto& [risc, intervals] : by_risc) {
     if (count == 0)
@@ -144,27 +146,46 @@ std::string number(double value) {
 } // namespace
 
 int main(int argc, char** argv) {
-  if (argc != 5 && argc < 7) {
-    std::cerr << "usage: summarize_tt_profiler RAW_CSV OUT_CSV ARCH TT_METAL_SHA [TILES ZONE...]\n";
+  if (argc != 5 && argc < 9) {
+    std::cerr << "usage: summarize_tt_profiler RAW_CSV OUT_CSV ARCH TT_METAL_SHA "
+                 "[TILES PREFIX_LAUNCHES ZONE_A ZONE_B ...]\n";
     return 2;
   }
   try {
     std::size_t tiles = bw_syn::tt_harness::critical_cases().size();
+    std::size_t prefix_launches = 1;
     std::vector<std::string> zones{"BW_SYN_TANH_FACTORED", "BW_SYN_TANH_MATERIALIZED"};
     if (argc > 5) {
       tiles = std::stoul(argv[5]);
-      zones.assign(argv + 6, argv + argc);
+      prefix_launches = std::stoul(argv[6]);
+      zones.assign(argv + 7, argv + argc);
     }
+    auto unique_zones = zones;
+    std::sort(unique_zones.begin(), unique_zones.end());
+    if (tiles == 0 ||
+        std::adjacent_find(unique_zones.begin(), unique_zones.end()) != unique_zones.end())
+      throw std::runtime_error("need positive tile count and distinct zones");
     constexpr std::size_t measured = bw_syn::tt_harness::kDeviceMeasuredRuns;
     constexpr std::size_t warmup = bw_syn::tt_harness::kDeviceWarmupRuns;
     const auto samples = parse(argv[1], zones);
-    std::vector<std::string> rows;
+    const auto expected = prefix_launches + warmup + measured;
     for (const auto& zone : zones) {
       const auto found = samples.find(zone);
-      if (found == samples.end() || found->second.size() < measured + warmup + 1)
-        throw std::runtime_error("too few profiler samples for " + zone);
-      auto ordered = found->second;
-      std::sort(ordered.begin(), ordered.end());
+      if (found == samples.end() || found->second.size() != expected)
+        throw std::runtime_error("wrong profiler sample count for " + zone);
+    }
+    std::uint64_t previous_end = 0;
+    for (std::size_t i = prefix_launches; i < expected; ++i) {
+      for (const auto& zone : zones) {
+        const auto [start, duration] = samples.at(zone)[i];
+        if (start < previous_end)
+          throw std::runtime_error("timed profiler zones overlap or run out of order");
+        previous_end = start + duration;
+      }
+    }
+    std::vector<std::string> rows;
+    for (const auto& zone : zones) {
+      const auto& ordered = samples.at(zone);
       std::vector<std::uint64_t> cycles;
       for (auto it = ordered.end() - measured; it != ordered.end(); ++it)
         cycles.push_back(it->second);

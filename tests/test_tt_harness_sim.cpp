@@ -71,8 +71,10 @@ int main() {
   }
   assert(checked > 1000);
   const auto tail = run_tail_tanh(DeviceMode::HostSim);
-  assert(tail.normal_outputs > 700);
+  assert(tail.cases.size() == 3402);
+  assert(tail.normal_outputs > 2900);
   assert(tail.all_normal_outputs_pass);
+  assert(!tail.vendor_normal_passes);
   const auto format = run_format_probe(DeviceMode::HostSim);
   assert(format.rows.size() == 8);
   for (const auto& row : format.rows)

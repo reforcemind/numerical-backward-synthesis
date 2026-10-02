@@ -12,6 +12,7 @@ enum class TtKernelKind {
   Factored,
   BaselineMaterialize,
   TanhTailSplit4,
+  VendorTanhDerivative,
   ProbeRawCopy,
   ProbeComputeCopy,
   ProbeComputeMul,

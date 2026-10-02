@@ -3,6 +3,10 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOT"
 export BW_SYN_ROOT="$ROOT"
+if [[ -n "$(git status --porcelain --untracked-files=no)" ]]; then
+  echo "ERROR: commit tracked source changes before a pinned device run" >&2
+  exit 3
+fi
 if [[ "$#" -gt 1 || ( "${1:-}" != "" && "${1:-}" != "--explore" && "${1:-}" != "--tail-timing" ) ]]; then
   echo "ERROR: usage: run_on_device.sh [--explore | --tail-timing]" >&2
   exit 2
@@ -71,18 +75,19 @@ fi
   uname -a
   sha256sum tt/kernels/common/tanh_factor.h tt/kernels/compute/tanh_bw_scale_separated.cpp \
     tt/kernels/compute/tanh_bw_baseline.cpp tt/kernels/compute/tanh_bw_tail_split4.cpp \
-    tt/kernels/compute/format_probe.cpp
+    tt/kernels/compute/tanh_bw_vendor_derivative.cpp tt/kernels/compute/format_probe.cpp
 } > "$PROVENANCE"
 cmake -S . -B "$BUILD" -DCMAKE_BUILD_TYPE=Release -DBW_SYN_WITH_TTMETAL=ON 2>&1 | tee "$BUILD_LOG"
 cmake --build "$BUILD" -j "${BW_SYN_BUILD_JOBS:-2}" 2>&1 | tee -a "$BUILD_LOG"
 if [[ "$TAIL_TIMING" == "1" ]]; then
-  # Diagnostic cycles for the scoped tail kernel vs materialized on the same finite tail tiles.
-  echo "Running tail timing; finite tail inputs only, not paper measurements"
+  echo "Running tail correctness before diagnostic timing"
+  rm -f "results/hw/tail_cycles_${ARCH}.csv" "results/hw/tail_timed_${ARCH}.csv"
   PROFILE_LOG="$TT_METAL_HOME/generated/profiler/.logs/profile_log_device.csv"
   PROFILE_MARKER="$(mktemp)"
   trap 'rm -f "$PROFILE_MARKER"' EXIT
+  TAIL_CSV="results/hw/tail_timed_${ARCH}.csv"
   if TT_METAL_DEVICE_PROFILER=1 TT_METAL_SLOW_DISPATCH_MODE=1 "$BUILD/run_tt_harness" --device \
-    --tail-sweep --timed --csv "results/hw/tail_timed_${ARCH}.csv" 2>&1 | \
+    --tail-sweep --timed --csv "$TAIL_CSV" 2>&1 | \
     tee "results/hw/tail_timed_${ARCH}_${HEAD}.log"; then
     TAIL_STATUS=0
   else
@@ -91,15 +96,27 @@ if [[ "$TAIL_TIMING" == "1" ]]; then
   if [[ "$TAIL_STATUS" -gt 1 ]]; then
     exit "$TAIL_STATUS"
   fi
-  if [[ ! -f "$PROFILE_LOG" || ! "$PROFILE_LOG" -nt "$PROFILE_MARKER" ]]; then
+  if [[ -f "$PROFILE_LOG" && "$PROFILE_LOG" -nt "$PROFILE_MARKER" ]]; then
+    RAW_PROFILE="results/hw/raw_tail_profiler_${ARCH}_${HEAD}_$(git rev-parse --short HEAD).csv"
+    cp "$PROFILE_LOG" "$RAW_PROFILE"
+  elif [[ "$TAIL_STATUS" == "0" ]]; then
     echo "ERROR: no fresh device profiler CSV at $PROFILE_LOG" >&2
     exit 4
   fi
-  RAW_PROFILE="results/hw/raw_tail_profiler_${ARCH}_${HEAD}.csv"
-  cp "$PROFILE_LOG" "$RAW_PROFILE"
-  "$BUILD/summarize_tt_profiler" "$RAW_PROFILE" "results/hw/tail_cycles_${ARCH}.csv" "$ARCH" \
-    "$HEAD" 128 BW_SYN_TANH_TAIL_SPLIT4 BW_SYN_TANH_MATERIALIZED || exit 4
-  cat "results/hw/tail_cycles_${ARCH}.csv"
+  if [[ "$TAIL_STATUS" == "0" ]]; then
+    CASE_COUNT="$(($(wc -l < "$TAIL_CSV") - 1))"
+    PREFIX_LAUNCHES="$(((CASE_COUNT + 127) / 128))"
+    "$BUILD/summarize_tt_profiler" "$RAW_PROFILE" "results/hw/tail_cycles_${ARCH}.csv" "$ARCH" \
+      "$HEAD" 128 "$PREFIX_LAUNCHES" BW_SYN_TANH_TAIL_SPLIT4 BW_SYN_TANH_MATERIALIZED \
+      BW_SYN_TANH_VENDOR_DERIVATIVE || exit 4
+    cat "results/hw/tail_cycles_${ARCH}.csv"
+  else
+    echo "Tail candidate failed the normal-output contract; timing summary withheld" >&2
+  fi
+  rm -f "results/hw/format_${ARCH}.csv"
+  TT_METAL_SLOW_DISPATCH_MODE=1 "$BUILD/run_tt_harness" --device --format-probe \
+    --csv "results/hw/format_${ARCH}.csv" 2>&1 | \
+    tee "results/hw/format_${ARCH}_${HEAD}.log"
   exit "$TAIL_STATUS"
 fi
 if [[ "$EXPLORE" == "1" ]]; then

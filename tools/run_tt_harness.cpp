@@ -91,17 +91,20 @@ int main(int argc, char** argv) {
                      hex16(c.x.bits) + "," + hex16(c.g.bits) + "," + hex16(c.oracle.bits) + "," +
                      hex16(c.observed.bits) + "," +
                      (c.normal_output ? "finite_normal_output" : "outside_scope") + "," +
-                     (c.normal_output ? (c.pass ? "1" : "0") : "") + "," +
-                     hex16(c.baseline.bits) + "," +
-                     (c.normal_output ? (c.baseline_pass ? "1" : "0") : ""));
+                     (c.normal_output ? (c.pass ? "1" : "0") : "") + "," + hex16(c.baseline.bits) +
+                     "," + (c.normal_output ? (c.baseline_pass ? "1" : "0") : "") + "," +
+                     (c.timed_input ? "1" : "0") + "," + (c.vendor ? hex16(c.vendor->bits) : "") +
+                     "," + (c.vendor_pass ? (*c.vendor_pass ? "1" : "0") : ""));
     if (!write_csv(out,
                    "label,arch,tt_metal_commit,x_bits,g_bits,oracle_bits,observed_bits,scope,pass,"
-                   "baseline_bits,baseline_pass",
+                   "baseline_bits,baseline_pass,timed_input,vendor_bits,vendor_pass",
                    rows))
       return 1;
     std::cout << "tail sweep: " << rep.normal_outputs << " normal-output cases of "
               << rep.cases.size() << "; all pass=" << rep.all_normal_outputs_pass
               << "; materialized baseline passes " << rep.baseline_normal_passes << "\n";
+    if (rep.vendor_normal_passes)
+      std::cout << "vendor derivative-times-gradient passes " << *rep.vendor_normal_passes << "\n";
     if (rep.timing_tiles != 0)
       std::cout << "tail timing: " << rep.timing_tiles << " tiles, " << rep.device_warmup_runs
                 << " warmup + " << rep.device_measured_runs << " measured launches per kernel\n";

@@ -186,7 +186,7 @@ std::vector<std::pair<BF16, BF16>> tail_tanh_cases() {
   std::vector<std::pair<BF16, BF16>> cases;
   const std::uint32_t first = BF16::from_f64(4).bits;
   const std::uint32_t last = BF16::from_f64(88.5).bits;
-  for (std::uint32_t bits = first; bits <= last; bits += 4) {
+  for (std::uint32_t bits = first; bits <= last; ++bits) {
     const BF16 x = BF16::from_bits(static_cast<std::uint16_t>(bits));
     for (const BF16 g : gradients)
       cases.emplace_back(x, g);
@@ -210,16 +210,19 @@ TailRunReport run_tail_tanh(DeviceMode prefer, bool timed) {
   oracles.reserve(cases.size());
   for (const auto& [x, g] : cases)
     oracles.push_back(contract_reference(BackwardKind::Tanh, contract, x, g));
-  std::vector<BF16> observed, baseline;
+  std::vector<BF16> observed, baseline, vendor;
   observed.reserve(cases.size());
   baseline.reserve(cases.size());
+#if defined(BW_SYN_WITH_TTMETAL)
+  std::unique_ptr<TtDeviceSession> session;
+#endif
 
   if (prefer == DeviceMode::TtMetal) {
 #if defined(BW_SYN_WITH_TTMETAL)
     if (!rep.device.available)
       throw std::runtime_error("--device requires TT_METAL_HOME");
     require_device_pin(rep.device);
-    TtDeviceSession session(tt_probe().device_id);
+    session = std::make_unique<TtDeviceSession>(tt_probe().device_id);
     constexpr std::size_t batch_size = 128;
     auto run_all = [&](TtKernelKind kind, std::vector<BF16>& out) {
       for (std::size_t base = 0; base < cases.size(); base += batch_size) {
@@ -231,30 +234,14 @@ TailRunReport run_tail_tanh(DeviceMode prefer, bool timed) {
           xs.push_back(cases[i].first);
           gs.push_back(cases[i].second);
         }
-        auto batch = session.eval_batch(kind, xs, gs);
+        auto batch = session->eval_batch(kind, xs, gs);
         out.insert(out.end(), batch.begin(), batch.end());
       }
     };
     run_all(TtKernelKind::TanhTailSplit4, observed);
     run_all(TtKernelKind::BaselineMaterialize, baseline);
-    if (timed) {
-      std::vector<BF16> xs, gs;
-      for (std::size_t i = 0; i < cases.size() && xs.size() < kTailTimingTiles; ++i) {
-        if (!oracles[i].is_normal())
-          continue;
-        xs.push_back(cases[i].first);
-        gs.push_back(cases[i].second);
-      }
-      if (xs.size() < kTailTimingTiles)
-        throw std::runtime_error("tail timing needs more normal-output cases");
-      rep.timing_tiles = xs.size();
-      rep.device_warmup_runs = kDeviceWarmupRuns;
-      rep.device_measured_runs = kDeviceMeasuredRuns;
-      for (int i = 0; i < rep.device_warmup_runs + rep.device_measured_runs; ++i) {
-        session.eval_batch(TtKernelKind::TanhTailSplit4, xs, gs);
-        session.eval_batch(TtKernelKind::BaselineMaterialize, xs, gs);
-      }
-    }
+    run_all(TtKernelKind::VendorTanhDerivative, vendor);
+    rep.vendor_normal_passes = 0;
 #else
     (void)timed;
     throw std::runtime_error("--device requires -DBW_SYN_WITH_TTMETAL=ON");
@@ -274,23 +261,66 @@ TailRunReport run_tail_tanh(DeviceMode prefer, bool timed) {
     const BF16 oracle = oracles[i];
     const bool in_scope = oracle.is_normal();
     auto passes = [&](BF16 got) {
-      return in_scope &&
-             check_sample(contract, x, g, got, oracle).verdict == ContractVerdict::Pass;
+      return in_scope && check_sample(contract, x, g, got, oracle).verdict == ContractVerdict::Pass;
     };
     const bool pass = passes(observed[i]);
     const bool baseline_pass = passes(baseline[i]);
+    std::optional<BF16> vendor_result;
+    std::optional<bool> vendor_pass;
+    if (!vendor.empty()) {
+      vendor_result = vendor[i];
+      vendor_pass = passes(vendor[i]);
+    }
     if (in_scope) {
       ++rep.normal_outputs;
       if (!pass)
         rep.all_normal_outputs_pass = false;
       if (baseline_pass)
         ++rep.baseline_normal_passes;
+      if (vendor_pass.value_or(false))
+        ++*rep.vendor_normal_passes;
     }
-    rep.cases.push_back(
-        TailCaseResult{x, g, oracle, observed[i], baseline[i], in_scope, pass, baseline_pass});
+    rep.cases.push_back(TailCaseResult{x,
+                                       g,
+                                       oracle,
+                                       observed[i],
+                                       baseline[i],
+                                       vendor_result,
+                                       in_scope,
+                                       pass,
+                                       baseline_pass,
+                                       vendor_pass});
   }
   if (rep.normal_outputs == 0)
     throw std::runtime_error("tail sweep has no normal-output cases");
+
+#if defined(BW_SYN_WITH_TTMETAL)
+  if (timed && rep.all_normal_outputs_pass) {
+    std::vector<std::size_t> eligible;
+    for (std::size_t i = 0; i < rep.cases.size(); ++i)
+      if (rep.cases[i].normal_output)
+        eligible.push_back(i);
+    if (eligible.size() < kTailTimingTiles)
+      throw std::runtime_error("tail timing needs more normal-output cases");
+    std::vector<BF16> xs, gs;
+    xs.reserve(kTailTimingTiles);
+    gs.reserve(kTailTimingTiles);
+    for (std::size_t j = 0; j < kTailTimingTiles; ++j) {
+      const auto i = eligible[j * (eligible.size() - 1) / (kTailTimingTiles - 1)];
+      rep.cases[i].timed_input = true;
+      xs.push_back(cases[i].first);
+      gs.push_back(cases[i].second);
+    }
+    rep.timing_tiles = xs.size();
+    rep.device_warmup_runs = kDeviceWarmupRuns;
+    rep.device_measured_runs = kDeviceMeasuredRuns;
+    for (int i = 0; i < rep.device_warmup_runs + rep.device_measured_runs; ++i) {
+      session->eval_batch(TtKernelKind::TanhTailSplit4, xs, gs);
+      session->eval_batch(TtKernelKind::BaselineMaterialize, xs, gs);
+      session->eval_batch(TtKernelKind::VendorTanhDerivative, xs, gs);
+    }
+  }
+#endif
   return rep;
 }
 

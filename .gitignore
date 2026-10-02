@@ -6,12 +6,14 @@ docs/paper.tex
 docs/references.bib
 research/appendix_proofs.md
 tmp/
+generated/
 results/hw/build_explore_*.log
 results/hw/explore_provenance_*.txt
 results/hw/tail_*.csv
 results/hw/tail_*.log
 results/hw/format_*.csv
 results/hw/format_*.log
+results/hw/raw_tail_profiler_*.csv
 cmake-build-*/
 .vscode/
 .idea/
