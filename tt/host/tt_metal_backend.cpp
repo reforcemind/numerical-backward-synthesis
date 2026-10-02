@@ -64,8 +64,8 @@ std::string compute_kernel_path(TtKernelKind kind) {
   throw std::runtime_error("unknown TtKernelKind");
 }
 
-// Prefer detail::LaunchProgram on classic pins; swap to EnqueueProgram+Finish when
-// locking a metalium SHA that exposes the CQ API (document SHA in tt/pin/).
+// detail::LaunchProgram / WriteToBuffer / ReadFromBuffer are slow-dispatch APIs;
+// TtDeviceSession opens the device in slow-dispatch mode to match.
 void enqueue_or_launch(MetalDevice* device, metal::Program& program) {
   metal::detail::LaunchProgram(device, program);
 }
@@ -190,6 +190,9 @@ TtDeviceInfo tt_probe() {
 }
 
 TtDeviceSession::TtDeviceSession(int device_id) : device_id_(device_id) {
+  // Read by tt-metal when CreateDevice builds its runtime options; mixing fast and
+  // slow dispatch aborts at CloseDevice.
+  setenv("TT_METAL_SLOW_DISPATCH_MODE", "1", /*overwrite=*/0);
   auto* dev = metal::CreateDevice(device_id_);
   if (!dev)
     throw std::runtime_error("CreateDevice failed");

@@ -4,4 +4,4 @@ host,tanh_backward,all_g_at_x_+0_+45_+inf,196608,196608,0,0,1
 host,tanh_backward,three_bf16_bit_permutations,196608,196608,0,0,1
 host,sigmoid_backward,all_x_at_g_+0_4_+inf,196608,196608,0,0,1
 host,sigmoid_backward,all_g_at_x_+0_+90_+inf,196608,196608,0,0,1
-host,sigmoid_backward,three_bf16_bit_permutations,196608,196608,0,0,1
+host,sigmoid_backward,three_bf16_bit_permutations,196608,196608,1,0,1

@@ -7,6 +7,8 @@ Treat the first run as an API and numerical bring-up, not a completed paper expe
 The tile API names were checked against upstream `tt-metal` source at
 `9ac55ec9be762d2ce46eec193299eb34cff2f8d7`; this is an API reference,
 not a substitute for the SHA recorded on the Wormhole machine.
+The first on-board results, open issues and the porting notes for pin `f9524a5f`
+are in [`research/device_bringup_wormhole.md`](../research/device_bringup_wormhole.md).
 
 ## Roles
 
@@ -56,6 +58,7 @@ Copy this checklist. Nothing below can be finished on a laptop without the board
 cd /path/to/bw_kernel_syn
 export TT_METAL_HOME=/path/to/tt-metal
 export BW_SYN_ARCH=wormhole
+export TT_METAL_RUNTIME_ROOT="$TT_METAL_HOME"   # newer tt-metal reads this, not TT_METAL_HOME
 git -C "$TT_METAL_HOME" rev-parse HEAD
 ```
 
@@ -155,7 +158,8 @@ Sigmoid is covered on **host** tables
 
 ## 4. If build/API fails on your pin
 
-1. Confirm `find_library` sees `tt_metal` / `tt_metalium` under `$TT_METAL_HOME/build/lib`.
+1. Confirm `find_package(TT-Metalium)` finds `$TT_METAL_HOME/build/lib/cmake/tt-metalium`
+   (the build links the exported `TT::Metalium` target for headers and deps).
 2. Classic vs metalium headers: `tt/host/tt_metal_backend.cpp` already dual-includes.
 3. If your SHA only exposes `EnqueueProgram`, replace `detail::LaunchProgram` in that
    file and note the SHA in a comment + the pin file.

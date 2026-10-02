@@ -42,8 +42,38 @@ std::size_t column(const std::vector<std::string>& names, const std::string& wan
   return static_cast<std::size_t>(it - names.begin());
 }
 
-using Key = std::tuple<std::string, std::string, std::string, std::string, std::string>;
+using Key = std::tuple<std::string, std::string, std::string, std::string>;
+using Interval = std::pair<std::uint64_t, std::uint64_t>;
 using Sample = std::pair<std::uint64_t, std::uint64_t>;
+
+// Each TRISC records its own copy of a compute-kernel zone, and slow dispatch leaves
+// "run host ID" at 0, so the k-th zone on every TRISC of a core is launch k. A launch
+// spans the earliest TRISC start to the latest TRISC end.
+std::vector<Sample> launches(const std::string& zone,
+                             const std::map<std::string, std::vector<Interval>>& by_risc) {
+  std::size_t count = 0;
+  for (const auto& [risc, intervals] : by_risc) {
+    if (count == 0)
+      count = intervals.size();
+    else if (intervals.size() != count)
+      throw std::runtime_error("TRISC zone counts differ for " + zone);
+  }
+  std::vector<Sample> out;
+  std::uint64_t previous_end = 0;
+  for (std::size_t k = 0; k < count; ++k) {
+    std::uint64_t start = UINT64_MAX;
+    std::uint64_t end = 0;
+    for (const auto& [risc, intervals] : by_risc) {
+      start = std::min(start, intervals[k].first);
+      end = std::max(end, intervals[k].second);
+    }
+    if (k > 0 && start < previous_end)
+      throw std::runtime_error("overlapping launches for " + zone);
+    previous_end = end;
+    out.emplace_back(start, end - start);
+  }
+  return out;
+}
 
 std::map<std::string, std::vector<Sample>> parse(const std::string& path) {
   std::ifstream in(path);
@@ -57,16 +87,17 @@ std::map<std::string, std::vector<Sample>> parse(const std::string& path) {
       break;
   }
   const auto zone_col = column(header, "zone name");
-  const auto phase_col = column(header, "zone phase");
+  const auto phase_col = column(header, "type");
   const auto time_col = column(header, "time[cycles since reset]");
-  const auto run_col = column(header, "Run ID");
   const auto x_col = column(header, "core_x");
   const auto y_col = column(header, "core_y");
   const auto risc_col = column(header, "RISC processor type");
-  const auto largest = std::max({zone_col, phase_col, time_col, run_col, x_col, y_col, risc_col});
+  const auto largest = std::max({zone_col, phase_col, time_col, x_col, y_col, risc_col});
 
   std::map<Key, std::uint64_t> begins;
-  std::map<std::string, std::vector<Sample>> samples;
+  // zone -> core -> RISC -> intervals
+  std::map<std::string, std::map<std::string, std::map<std::string, std::vector<Interval>>>>
+      intervals;
   while (std::getline(in, line)) {
     const auto row = fields(line);
     if (row.size() <= largest)
@@ -74,21 +105,32 @@ std::map<std::string, std::vector<Sample>> parse(const std::string& path) {
     const auto& zone = row[zone_col];
     if (zone != "BW_SYN_TANH_FACTORED" && zone != "BW_SYN_TANH_MATERIALIZED")
       continue;
-    const Key key{zone, row[run_col], row[x_col], row[y_col], row[risc_col]};
+    const auto core = row[x_col] + "-" + row[y_col];
+    const Key key{zone, row[x_col], row[y_col], row[risc_col]};
     const auto tick = std::stoull(row[time_col]);
-    if (row[phase_col] == "begin") {
+    if (row[phase_col] == "ZONE_START") {
       if (!begins.emplace(key, tick).second)
         throw std::runtime_error("overlapping profiler zone: " + zone);
-    } else if (row[phase_col] == "end") {
+    } else if (row[phase_col] == "ZONE_END") {
       const auto it = begins.find(key);
       if (it == begins.end() || tick < it->second)
         throw std::runtime_error("unpaired profiler end: " + zone);
-      samples[zone].emplace_back(it->second, tick - it->second);
+      intervals[zone][core][row[risc_col]].emplace_back(it->second, tick);
       begins.erase(it);
     }
   }
   if (!begins.empty())
     throw std::runtime_error("unpaired profiler begin");
+
+  std::map<std::string, std::vector<Sample>> samples;
+  for (auto& [zone, cores] : intervals) {
+    if (cores.size() != 1)
+      throw std::runtime_error("expected one core for " + zone);
+    auto& by_risc = cores.begin()->second;
+    for (auto& [risc, list] : by_risc)
+      std::sort(list.begin(), list.end());
+    samples[zone] = launches(zone, by_risc);
+  }
   return samples;
 }
 

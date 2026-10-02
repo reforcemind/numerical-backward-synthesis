@@ -1,0 +1,3 @@
+label,arch,tt_metal_commit,zone,tiles,warmup,measured,median_cycles,p95_cycles,median_cycles_per_tile,p95_cycles_per_tile,raw_profiler
+device,wormhole,f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee,BW_SYN_TANH_FACTORED,10,5,20,57478.000,57568.000,5747.800,5756.800,results/paper/raw_device_profiler_wormhole_f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee.csv
+device,wormhole,f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee,BW_SYN_TANH_MATERIALIZED,10,5,20,42066.000,42119.000,4206.600,4211.900,results/paper/raw_device_profiler_wormhole_f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee.csv

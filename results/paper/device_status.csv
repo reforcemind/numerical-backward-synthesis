@@ -1,8 +1,10 @@
 item,status
-wormhole_csv,unmeasured
-blackhole_csv,unmeasured
-cycles_per_tile,unmeasured
+device_csv,results/hw/wormhole.csv
+arch,wormhole
+tt_metal_commit,f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee
+all_pass,0
+baseline_false_zero_observed,1
+device_warmup_runs,5
+device_measured_runs,20
 insn_dump,unmeasured
 regs,unmeasured
-device_ftz,unmeasured
-tt_metal_pin,UNSET_until_board_run

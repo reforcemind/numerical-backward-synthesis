@@ -8,6 +8,8 @@ if [[ -z "${TT_METAL_HOME:-}" ]]; then
   echo "ERROR: TT_METAL_HOME unset" >&2
   exit 3
 fi
+# Newer tt-metal resolves its runtime root from this variable, not TT_METAL_HOME.
+export TT_METAL_RUNTIME_ROOT="${TT_METAL_RUNTIME_ROOT:-$TT_METAL_HOME}"
 ARCH="${BW_SYN_ARCH:-}"
 if [[ "$ARCH" != "wormhole" && "$ARCH" != "blackhole" ]]; then
   echo "ERROR: set BW_SYN_ARCH=wormhole or blackhole" >&2

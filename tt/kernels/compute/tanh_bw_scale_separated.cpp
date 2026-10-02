@@ -38,7 +38,7 @@ void kernel_main() {
     ckernel::mul_binary_tile_init();
     ckernel::mul_binary_tile(2, 3, 2);
     ckernel::where_tile_init();
-    ckernel::where_tile<tt::DataFormat::Float32>(2, 1, 0, 0);
+    ckernel::where_tile<DataFormat::Float32>(2, 1, 0, 0);
     tile_regs_commit();
     tile_regs_wait();
     cb_reserve_back(cb_y, 1);

@@ -1,0 +1,19 @@
+--- a/tt/kernels/compute/tanh_bw_scale_separated.cpp
++++ b/tt/kernels/compute/tanh_bw_scale_separated.cpp
+@@ -29,16 +29,6 @@
+     ckernel::mul_binary_tile(1, 0, 2);
+     ckernel::mul_binary_tile(2, 0, 0);
+ 
+-    copy_init(cb_g);
+-    copy_tile(cb_g, 0, 2);
+-    ckernel::isfinite_tile_init();
+-    ckernel::isfinite_tile(3);
+-    ckernel::isinf_tile_init();
+-    ckernel::isinf_tile(2);
+-    ckernel::mul_binary_tile_init();
+-    ckernel::mul_binary_tile(2, 3, 2);
+-    ckernel::where_tile_init();
+-    ckernel::where_tile<DataFormat::Float32>(2, 1, 0, 0);
+     tile_regs_commit();
+     tile_regs_wait();
+     cb_reserve_back(cb_y, 1);

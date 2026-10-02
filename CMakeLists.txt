@@ -61,21 +61,12 @@ if(BW_SYN_WITH_TTMETAL)
     set(TT_METAL_HOME "$ENV{TT_METAL_HOME}")
   endif()
   target_compile_definitions(bw_syn PUBLIC BW_SYN_WITH_TTMETAL=1)
-  target_include_directories(bw_syn PRIVATE
-    "${TT_METAL_HOME}"
-    "${TT_METAL_HOME}/tt_metal/api"
-    "${TT_METAL_HOME}/tt_metal/api/tt-metalium"
-    "${TT_METAL_HOME}/build/tt_metal/api"
-    "${TT_METAL_HOME}/tt_metal/hostdevcommon/api"
-    "${TT_METAL_HOME}/tt_metal/third_party/umd/include"
-  )
   target_include_directories(bw_syn PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/tt/kernels/common")
-  find_library(TT_METAL_LIB NAMES tt_metal tt_metalium
-    PATHS "${TT_METAL_HOME}/build/lib" "${TT_METAL_HOME}/built" NO_DEFAULT_PATH)
-  if(NOT TT_METAL_LIB)
-    message(FATAL_ERROR "BW_SYN_WITH_TTMETAL=ON but tt_metal/tt_metalium not found under ${TT_METAL_HOME}")
-  endif()
-  target_link_libraries(bw_syn PUBLIC ${TT_METAL_LIB})
+  # Use tt-metal's exported package so include paths and deps track the pinned build.
+  list(APPEND CMAKE_PREFIX_PATH "${TT_METAL_HOME}/build")
+  find_package(TT-Metalium REQUIRED CONFIG
+    PATHS "${TT_METAL_HOME}/build/lib/cmake/tt-metalium" NO_DEFAULT_PATH)
+  target_link_libraries(bw_syn PUBLIC TT::Metalium)
 endif()
 
 function(bw_add_tool name)

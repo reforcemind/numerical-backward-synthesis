@@ -1,0 +1,1924 @@
+- program_created:
+    id: 0
+    timestamp_ns: 1790888794370719359
+- program_compile_started:
+    id: 0
+    timestamp_ns: 1790888794372837792
+- program_kernel_compile_finished:
+    id: 0
+    timestamp_ns: 1790888794390577584
+    duration_ns: 17739792
+    watcher_kernel_id: 1
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 0
+    timestamp_ns: 1790888794392798050
+    duration_ns: 19960258
+    watcher_kernel_id: 2
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 0
+    timestamp_ns: 1790888795306585203
+    duration_ns: 933747411
+    watcher_kernel_id: 3
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_compile_finished:
+    id: 0
+    timestamp_ns: 1790888795306647868
+    duration_ns: 933810076
+- program_destroyed:
+    id: 0
+    timestamp_ns: 1790888795325307352
+- program_created:
+    id: 1
+    timestamp_ns: 1790888795325349926
+- program_compile_started:
+    id: 1
+    timestamp_ns: 1790888795325623547
+- program_kernel_compile_finished:
+    id: 1
+    timestamp_ns: 1790888795325909507
+    duration_ns: 285960
+    watcher_kernel_id: 4
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 1
+    timestamp_ns: 1790888795325925541
+    duration_ns: 301994
+    watcher_kernel_id: 5
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 1
+    timestamp_ns: 1790888795340105996
+    duration_ns: 14482449
+    watcher_kernel_id: 6
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_compile_finished:
+    id: 1
+    timestamp_ns: 1790888795340142030
+    duration_ns: 14518483
+- program_destroyed:
+    id: 1
+    timestamp_ns: 1790888795357531736
+- program_created:
+    id: 2
+    timestamp_ns: 1790888795357563133
+- program_compile_started:
+    id: 2
+    timestamp_ns: 1790888795357822954
+- program_kernel_compile_finished:
+    id: 2
+    timestamp_ns: 1790888795358083034
+    duration_ns: 260080
+    watcher_kernel_id: 8
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 2
+    timestamp_ns: 1790888795358096044
+    duration_ns: 273090
+    watcher_kernel_id: 9
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_kernel_compile_finished:
+    id: 2
+    timestamp_ns: 1790888795358122093
+    duration_ns: 299139
+    watcher_kernel_id: 7
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_compile_finished:
+    id: 2
+    timestamp_ns: 1790888795358466601
+    duration_ns: 643647
+- program_destroyed:
+    id: 2
+    timestamp_ns: 1790888795375848095
+- program_created:
+    id: 3
+    timestamp_ns: 1790888795375877770
+- program_compile_started:
+    id: 3
+    timestamp_ns: 1790888795376130519
+- program_kernel_compile_finished:
+    id: 3
+    timestamp_ns: 1790888795376339583
+    duration_ns: 209064
+    watcher_kernel_id: 11
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 3
+    timestamp_ns: 1790888795376357060
+    duration_ns: 226541
+    watcher_kernel_id: 10
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 3
+    timestamp_ns: 1790888795376375658
+    duration_ns: 245139
+    watcher_kernel_id: 12
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_compile_finished:
+    id: 3
+    timestamp_ns: 1790888795376393354
+    duration_ns: 262835
+- program_destroyed:
+    id: 3
+    timestamp_ns: 1790888795393674578
+- program_created:
+    id: 4
+    timestamp_ns: 1790888795393701819
+- program_compile_started:
+    id: 4
+    timestamp_ns: 1790888795393948660
+- program_kernel_compile_finished:
+    id: 4
+    timestamp_ns: 1790888795394232316
+    duration_ns: 283656
+    watcher_kernel_id: 14
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 4
+    timestamp_ns: 1790888795394251655
+    duration_ns: 302995
+    watcher_kernel_id: 15
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_kernel_compile_finished:
+    id: 4
+    timestamp_ns: 1790888795394272486
+    duration_ns: 323826
+    watcher_kernel_id: 13
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_compile_finished:
+    id: 4
+    timestamp_ns: 1790888795394623504
+    duration_ns: 674844
+- program_destroyed:
+    id: 4
+    timestamp_ns: 1790888795411890917
+- program_created:
+    id: 5
+    timestamp_ns: 1790888795411924307
+- program_compile_started:
+    id: 5
+    timestamp_ns: 1790888795412176056
+- program_kernel_compile_finished:
+    id: 5
+    timestamp_ns: 1790888795412520182
+    duration_ns: 344126
+    watcher_kernel_id: 17
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 5
+    timestamp_ns: 1790888795412544749
+    duration_ns: 368693
+    watcher_kernel_id: 18
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_kernel_compile_finished:
+    id: 5
+    timestamp_ns: 1790888795412566863
+    duration_ns: 390807
+    watcher_kernel_id: 16
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_compile_finished:
+    id: 5
+    timestamp_ns: 1790888795412585200
+    duration_ns: 409144
+- program_destroyed:
+    id: 5
+    timestamp_ns: 1790888795430040616
+- program_created:
+    id: 6
+    timestamp_ns: 1790888795430071211
+- program_compile_started:
+    id: 6
+    timestamp_ns: 1790888795430316590
+- program_kernel_compile_finished:
+    id: 6
+    timestamp_ns: 1790888795430642961
+    duration_ns: 326371
+    watcher_kernel_id: 20
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 6
+    timestamp_ns: 1790888795430664683
+    duration_ns: 348093
+    watcher_kernel_id: 19
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 6
+    timestamp_ns: 1790888795430686656
+    duration_ns: 370066
+    watcher_kernel_id: 21
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_compile_finished:
+    id: 6
+    timestamp_ns: 1790888795430707157
+    duration_ns: 390567
+- program_destroyed:
+    id: 6
+    timestamp_ns: 1790888795448290444
+- program_created:
+    id: 7
+    timestamp_ns: 1790888795448320650
+- program_compile_started:
+    id: 7
+    timestamp_ns: 1790888795448563384
+- program_kernel_compile_finished:
+    id: 7
+    timestamp_ns: 1790888795448821943
+    duration_ns: 258559
+    watcher_kernel_id: 23
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 7
+    timestamp_ns: 1790888795448844046
+    duration_ns: 280662
+    watcher_kernel_id: 24
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_kernel_compile_finished:
+    id: 7
+    timestamp_ns: 1790888795448861602
+    duration_ns: 298218
+    watcher_kernel_id: 22
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_compile_finished:
+    id: 7
+    timestamp_ns: 1790888795448882864
+    duration_ns: 319480
+- program_destroyed:
+    id: 7
+    timestamp_ns: 1790888795466409617
+- program_created:
+    id: 8
+    timestamp_ns: 1790888795466438290
+- program_compile_started:
+    id: 8
+    timestamp_ns: 1790888795466679282
+- program_kernel_compile_finished:
+    id: 8
+    timestamp_ns: 1790888795466935547
+    duration_ns: 256265
+    watcher_kernel_id: 26
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 8
+    timestamp_ns: 1790888795466963779
+    duration_ns: 284497
+    watcher_kernel_id: 27
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_kernel_compile_finished:
+    id: 8
+    timestamp_ns: 1790888795466992152
+    duration_ns: 312870
+    watcher_kernel_id: 25
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_compile_finished:
+    id: 8
+    timestamp_ns: 1790888795467356489
+    duration_ns: 677207
+- program_destroyed:
+    id: 8
+    timestamp_ns: 1790888795484637683
+- program_created:
+    id: 9
+    timestamp_ns: 1790888795484668349
+- program_compile_started:
+    id: 9
+    timestamp_ns: 1790888795484914068
+- program_kernel_compile_finished:
+    id: 9
+    timestamp_ns: 1790888795485154620
+    duration_ns: 240552
+    watcher_kernel_id: 28
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 9
+    timestamp_ns: 1790888795485173949
+    duration_ns: 259881
+    watcher_kernel_id: 29
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 9
+    timestamp_ns: 1790888795485187589
+    duration_ns: 273521
+    watcher_kernel_id: 30
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_compile_finished:
+    id: 9
+    timestamp_ns: 1790888795485204865
+    duration_ns: 290797
+- program_destroyed:
+    id: 9
+    timestamp_ns: 1790888795502640180
+- program_created:
+    id: 10
+    timestamp_ns: 1790888795502676014
+- program_compile_started:
+    id: 10
+    timestamp_ns: 1790888795502926320
+- program_kernel_compile_finished:
+    id: 10
+    timestamp_ns: 1790888795503298720
+    duration_ns: 372400
+    watcher_kernel_id: 32
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 10
+    timestamp_ns: 1790888795503316997
+    duration_ns: 390677
+    watcher_kernel_id: 31
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 10
+    timestamp_ns: 1790888795503328785
+    duration_ns: 402465
+    watcher_kernel_id: 33
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_compile_finished:
+    id: 10
+    timestamp_ns: 1790888795503344869
+    duration_ns: 418549
+- program_destroyed:
+    id: 10
+    timestamp_ns: 1790888795520485301
+- program_created:
+    id: 11
+    timestamp_ns: 1790888795520514325
+- program_compile_started:
+    id: 11
+    timestamp_ns: 1790888795520763098
+- program_kernel_compile_finished:
+    id: 11
+    timestamp_ns: 1790888795521127967
+    duration_ns: 364869
+    watcher_kernel_id: 35
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 11
+    timestamp_ns: 1790888795521147736
+    duration_ns: 384638
+    watcher_kernel_id: 34
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 11
+    timestamp_ns: 1790888795521163039
+    duration_ns: 399941
+    watcher_kernel_id: 36
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_compile_finished:
+    id: 11
+    timestamp_ns: 1790888795521466635
+    duration_ns: 703537
+- program_destroyed:
+    id: 11
+    timestamp_ns: 1790888795538688280
+- program_created:
+    id: 12
+    timestamp_ns: 1790888795538718195
+- program_compile_started:
+    id: 12
+    timestamp_ns: 1790888795538959086
+- program_kernel_compile_finished:
+    id: 12
+    timestamp_ns: 1790888795539239067
+    duration_ns: 279981
+    watcher_kernel_id: 38
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 12
+    timestamp_ns: 1790888795539256163
+    duration_ns: 297077
+    watcher_kernel_id: 39
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_kernel_compile_finished:
+    id: 12
+    timestamp_ns: 1790888795539271376
+    duration_ns: 312290
+    watcher_kernel_id: 37
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_compile_finished:
+    id: 12
+    timestamp_ns: 1790888795539286598
+    duration_ns: 327512
+- program_destroyed:
+    id: 12
+    timestamp_ns: 1790888795556555825
+- program_created:
+    id: 13
+    timestamp_ns: 1790888795556584418
+- program_compile_started:
+    id: 13
+    timestamp_ns: 1790888795556825450
+- program_kernel_compile_finished:
+    id: 13
+    timestamp_ns: 1790888795557059742
+    duration_ns: 234292
+    watcher_kernel_id: 40
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 13
+    timestamp_ns: 1790888795557080893
+    duration_ns: 255443
+    watcher_kernel_id: 42
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_kernel_compile_finished:
+    id: 13
+    timestamp_ns: 1790888795557094123
+    duration_ns: 268673
+    watcher_kernel_id: 41
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_compile_finished:
+    id: 13
+    timestamp_ns: 1790888795557115425
+    duration_ns: 289975
+- program_destroyed:
+    id: 13
+    timestamp_ns: 1790888795574739254
+- program_created:
+    id: 14
+    timestamp_ns: 1790888795574771462
+- program_compile_started:
+    id: 14
+    timestamp_ns: 1790888795575025033
+- program_kernel_compile_finished:
+    id: 14
+    timestamp_ns: 1790888795575348008
+    duration_ns: 322975
+    watcher_kernel_id: 43
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 14
+    timestamp_ns: 1790888795575366947
+    duration_ns: 341914
+    watcher_kernel_id: 44
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 14
+    timestamp_ns: 1790888795575382610
+    duration_ns: 357577
+    watcher_kernel_id: 45
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_compile_finished:
+    id: 14
+    timestamp_ns: 1790888795575399286
+    duration_ns: 374253
+- program_destroyed:
+    id: 14
+    timestamp_ns: 1790888795592600088
+- program_created:
+    id: 15
+    timestamp_ns: 1790888795592633128
+- program_compile_started:
+    id: 15
+    timestamp_ns: 1790888795592885697
+- program_kernel_compile_finished:
+    id: 15
+    timestamp_ns: 1790888795593214531
+    duration_ns: 328834
+    watcher_kernel_id: 47
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 15
+    timestamp_ns: 1790888795593230225
+    duration_ns: 344528
+    watcher_kernel_id: 46
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 15
+    timestamp_ns: 1790888795593244747
+    duration_ns: 359050
+    watcher_kernel_id: 48
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_compile_finished:
+    id: 15
+    timestamp_ns: 1790888795593260260
+    duration_ns: 374563
+- program_destroyed:
+    id: 15
+    timestamp_ns: 1790888795610398058
+- program_created:
+    id: 16
+    timestamp_ns: 1790888795610427022
+- program_compile_started:
+    id: 16
+    timestamp_ns: 1790888795610672951
+- program_kernel_compile_finished:
+    id: 16
+    timestamp_ns: 1790888795611172772
+    duration_ns: 499821
+    watcher_kernel_id: 50
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 16
+    timestamp_ns: 1790888795611188245
+    duration_ns: 515294
+    watcher_kernel_id: 51
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_kernel_compile_finished:
+    id: 16
+    timestamp_ns: 1790888795611211340
+    duration_ns: 538389
+    watcher_kernel_id: 49
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_compile_finished:
+    id: 16
+    timestamp_ns: 1790888795611612282
+    duration_ns: 939331
+- program_destroyed:
+    id: 16
+    timestamp_ns: 1790888795628919796
+- program_created:
+    id: 17
+    timestamp_ns: 1790888795628947677
+- program_compile_started:
+    id: 17
+    timestamp_ns: 1790888795629187277
+- program_kernel_compile_finished:
+    id: 17
+    timestamp_ns: 1790888795629444163
+    duration_ns: 256886
+    watcher_kernel_id: 53
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 17
+    timestamp_ns: 1790888795629464975
+    duration_ns: 277698
+    watcher_kernel_id: 52
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 17
+    timestamp_ns: 1790888795629483112
+    duration_ns: 295835
+    watcher_kernel_id: 54
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_compile_finished:
+    id: 17
+    timestamp_ns: 1790888795629499426
+    duration_ns: 312149
+- program_destroyed:
+    id: 17
+    timestamp_ns: 1790888795646603494
+- program_created:
+    id: 18
+    timestamp_ns: 1790888795646634150
+- program_compile_started:
+    id: 18
+    timestamp_ns: 1790888795646883354
+- program_kernel_compile_finished:
+    id: 18
+    timestamp_ns: 1790888795647098988
+    duration_ns: 215634
+    watcher_kernel_id: 56
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 18
+    timestamp_ns: 1790888795647114501
+    duration_ns: 231147
+    watcher_kernel_id: 57
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_kernel_compile_finished:
+    id: 18
+    timestamp_ns: 1790888795647196555
+    duration_ns: 313201
+    watcher_kernel_id: 55
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_compile_finished:
+    id: 18
+    timestamp_ns: 1790888795647509505
+    duration_ns: 626151
+- program_destroyed:
+    id: 18
+    timestamp_ns: 1790888795664722656
+- program_created:
+    id: 19
+    timestamp_ns: 1790888795664755195
+- program_compile_started:
+    id: 19
+    timestamp_ns: 1790888795665002837
+- program_kernel_compile_finished:
+    id: 19
+    timestamp_ns: 1790888795665361977
+    duration_ns: 359140
+    watcher_kernel_id: 59
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 19
+    timestamp_ns: 1790888795665385472
+    duration_ns: 382635
+    watcher_kernel_id: 60
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_kernel_compile_finished:
+    id: 19
+    timestamp_ns: 1790888795665757511
+    duration_ns: 754674
+    watcher_kernel_id: 58
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_compile_finished:
+    id: 19
+    timestamp_ns: 1790888795665773545
+    duration_ns: 770708
+- program_destroyed:
+    id: 19
+    timestamp_ns: 1790888795683003752
+- program_created:
+    id: 20
+    timestamp_ns: 1790888795683034679
+- program_compile_started:
+    id: 20
+    timestamp_ns: 1790888795683279236
+- program_kernel_compile_finished:
+    id: 20
+    timestamp_ns: 1790888795683503974
+    duration_ns: 224738
+    watcher_kernel_id: 62
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 20
+    timestamp_ns: 1790888795683528971
+    duration_ns: 249735
+    watcher_kernel_id: 63
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_kernel_compile_finished:
+    id: 20
+    timestamp_ns: 1790888795683545676
+    duration_ns: 266440
+    watcher_kernel_id: 61
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_compile_finished:
+    id: 20
+    timestamp_ns: 1790888795683564014
+    duration_ns: 284778
+- program_destroyed:
+    id: 20
+    timestamp_ns: 1790888795701118398
+- program_created:
+    id: 21
+    timestamp_ns: 1790888795701148834
+- program_compile_started:
+    id: 21
+    timestamp_ns: 1790888795701395374
+- program_kernel_compile_finished:
+    id: 21
+    timestamp_ns: 1790888795701691890
+    duration_ns: 296516
+    watcher_kernel_id: 66
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_kernel_compile_finished:
+    id: 21
+    timestamp_ns: 1790888795701712210
+    duration_ns: 316836
+    watcher_kernel_id: 65
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 21
+    timestamp_ns: 1790888795701731059
+    duration_ns: 335685
+    watcher_kernel_id: 64
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_compile_finished:
+    id: 21
+    timestamp_ns: 1790888795702126933
+    duration_ns: 731559
+- program_destroyed:
+    id: 21
+    timestamp_ns: 1790888795719288127
+- program_created:
+    id: 22
+    timestamp_ns: 1790888795719316640
+- program_compile_started:
+    id: 22
+    timestamp_ns: 1790888795719558794
+- program_kernel_compile_finished:
+    id: 22
+    timestamp_ns: 1790888795719889511
+    duration_ns: 330717
+    watcher_kernel_id: 68
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 22
+    timestamp_ns: 1790888795719906296
+    duration_ns: 347502
+    watcher_kernel_id: 67
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 22
+    timestamp_ns: 1790888795719928109
+    duration_ns: 369315
+    watcher_kernel_id: 69
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_compile_finished:
+    id: 22
+    timestamp_ns: 1790888795719948319
+    duration_ns: 389525
+- program_destroyed:
+    id: 22
+    timestamp_ns: 1790888795737512267
+- program_created:
+    id: 23
+    timestamp_ns: 1790888795737543014
+- program_compile_started:
+    id: 23
+    timestamp_ns: 1790888795737789524
+- program_kernel_compile_finished:
+    id: 23
+    timestamp_ns: 1790888795738094712
+    duration_ns: 305188
+    watcher_kernel_id: 71
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 23
+    timestamp_ns: 1790888795738120101
+    duration_ns: 330577
+    watcher_kernel_id: 72
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_kernel_compile_finished:
+    id: 23
+    timestamp_ns: 1790888795738135624
+    duration_ns: 346100
+    watcher_kernel_id: 70
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_compile_finished:
+    id: 23
+    timestamp_ns: 1790888795738154001
+    duration_ns: 364477
+- program_destroyed:
+    id: 23
+    timestamp_ns: 1790888795755755096
+- program_created:
+    id: 24
+    timestamp_ns: 1790888795755792031
+- program_compile_started:
+    id: 24
+    timestamp_ns: 1790888795756052903
+- program_kernel_compile_finished:
+    id: 24
+    timestamp_ns: 1790888795756455328
+    duration_ns: 402425
+    watcher_kernel_id: 74
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 24
+    timestamp_ns: 1790888795756473896
+    duration_ns: 420993
+    watcher_kernel_id: 73
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 24
+    timestamp_ns: 1790888795756490641
+    duration_ns: 437738
+    watcher_kernel_id: 75
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_compile_finished:
+    id: 24
+    timestamp_ns: 1790888795756516289
+    duration_ns: 463386
+- program_destroyed:
+    id: 24
+    timestamp_ns: 1790888795774093297
+- program_created:
+    id: 25
+    timestamp_ns: 1790888795774123693
+- program_compile_started:
+    id: 25
+    timestamp_ns: 1790888795774366167
+- program_kernel_compile_finished:
+    id: 25
+    timestamp_ns: 1790888795774649423
+    duration_ns: 283256
+    watcher_kernel_id: 77
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 25
+    timestamp_ns: 1790888795774669182
+    duration_ns: 303015
+    watcher_kernel_id: 76
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 25
+    timestamp_ns: 1790888795774691676
+    duration_ns: 325509
+    watcher_kernel_id: 78
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_compile_finished:
+    id: 25
+    timestamp_ns: 1790888795774711706
+    duration_ns: 345539
+- program_destroyed:
+    id: 25
+    timestamp_ns: 1790888795791932770
+- program_created:
+    id: 26
+    timestamp_ns: 1790888795791963916
+- program_compile_started:
+    id: 26
+    timestamp_ns: 1790888795792212790
+- program_kernel_compile_finished:
+    id: 26
+    timestamp_ns: 1790888795792535796
+    duration_ns: 323006
+    watcher_kernel_id: 80
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 26
+    timestamp_ns: 1790888795792562856
+    duration_ns: 350066
+    watcher_kernel_id: 81
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_kernel_compile_finished:
+    id: 26
+    timestamp_ns: 1790888795792581855
+    duration_ns: 369065
+    watcher_kernel_id: 79
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_compile_finished:
+    id: 26
+    timestamp_ns: 1790888795792599211
+    duration_ns: 386421
+- program_destroyed:
+    id: 26
+    timestamp_ns: 1790888795810021266
+- program_created:
+    id: 27
+    timestamp_ns: 1790888795810049578
+- program_compile_started:
+    id: 27
+    timestamp_ns: 1790888795810294436
+- program_kernel_compile_finished:
+    id: 27
+    timestamp_ns: 1790888795812722905
+    duration_ns: 2428469
+    watcher_kernel_id: 82
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 27
+    timestamp_ns: 1790888795812740712
+    duration_ns: 2446276
+    watcher_kernel_id: 83
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 27
+    timestamp_ns: 1790888795812759740
+    duration_ns: 2465304
+    watcher_kernel_id: 84
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_compile_finished:
+    id: 27
+    timestamp_ns: 1790888795812778939
+    duration_ns: 2484503
+- program_destroyed:
+    id: 27
+    timestamp_ns: 1790888795830015085
+- program_created:
+    id: 28
+    timestamp_ns: 1790888795830047343
+- program_compile_started:
+    id: 28
+    timestamp_ns: 1790888795830302827
+- program_kernel_compile_finished:
+    id: 28
+    timestamp_ns: 1790888795830598021
+    duration_ns: 295194
+    watcher_kernel_id: 85
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 28
+    timestamp_ns: 1790888795830612903
+    duration_ns: 310076
+    watcher_kernel_id: 86
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 28
+    timestamp_ns: 1790888795830639513
+    duration_ns: 336686
+    watcher_kernel_id: 87
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_compile_finished:
+    id: 28
+    timestamp_ns: 1790888795830659934
+    duration_ns: 357107
+- program_destroyed:
+    id: 28
+    timestamp_ns: 1790888795847800186
+- program_created:
+    id: 29
+    timestamp_ns: 1790888795847833005
+- program_compile_started:
+    id: 29
+    timestamp_ns: 1790888795848088259
+- program_kernel_compile_finished:
+    id: 29
+    timestamp_ns: 1790888795848427758
+    duration_ns: 339499
+    watcher_kernel_id: 89
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 29
+    timestamp_ns: 1790888795848449341
+    duration_ns: 361082
+    watcher_kernel_id: 88
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 29
+    timestamp_ns: 1790888795848478314
+    duration_ns: 390055
+    watcher_kernel_id: 90
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_compile_finished:
+    id: 29
+    timestamp_ns: 1790888795848494659
+    duration_ns: 406400
+- program_destroyed:
+    id: 29
+    timestamp_ns: 1790888795865666048
+- program_created:
+    id: 30
+    timestamp_ns: 1790888795865697325
+- program_compile_started:
+    id: 30
+    timestamp_ns: 1790888795865940941
+- program_kernel_compile_finished:
+    id: 30
+    timestamp_ns: 1790888795866243456
+    duration_ns: 302515
+    watcher_kernel_id: 92
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 30
+    timestamp_ns: 1790888795866267882
+    duration_ns: 326941
+    watcher_kernel_id: 93
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_kernel_compile_finished:
+    id: 30
+    timestamp_ns: 1790888795866293320
+    duration_ns: 352379
+    watcher_kernel_id: 91
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_compile_finished:
+    id: 30
+    timestamp_ns: 1790888795866309004
+    duration_ns: 368063
+- program_destroyed:
+    id: 30
+    timestamp_ns: 1790888795883498650
+- program_created:
+    id: 31
+    timestamp_ns: 1790888795883527063
+- program_compile_started:
+    id: 31
+    timestamp_ns: 1790888795883767694
+- program_kernel_compile_finished:
+    id: 31
+    timestamp_ns: 1790888795884042478
+    duration_ns: 274784
+    watcher_kernel_id: 95
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 31
+    timestamp_ns: 1790888795884061266
+    duration_ns: 293572
+    watcher_kernel_id: 96
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_kernel_compile_finished:
+    id: 31
+    timestamp_ns: 1790888795884079383
+    duration_ns: 311689
+    watcher_kernel_id: 94
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_compile_finished:
+    id: 31
+    timestamp_ns: 1790888795884094696
+    duration_ns: 327002
+- program_destroyed:
+    id: 31
+    timestamp_ns: 1790888795901265564
+- program_created:
+    id: 32
+    timestamp_ns: 1790888795901296039
+- program_compile_started:
+    id: 32
+    timestamp_ns: 1790888795901541738
+- program_kernel_compile_finished:
+    id: 32
+    timestamp_ns: 1790888795902547309
+    duration_ns: 1005571
+    watcher_kernel_id: 98
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 32
+    timestamp_ns: 1790888795902566929
+    duration_ns: 1025191
+    watcher_kernel_id: 99
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_kernel_compile_finished:
+    id: 32
+    timestamp_ns: 1790888795902585297
+    duration_ns: 1043559
+    watcher_kernel_id: 97
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_compile_finished:
+    id: 32
+    timestamp_ns: 1790888795902601501
+    duration_ns: 1059763
+- program_destroyed:
+    id: 32
+    timestamp_ns: 1790888795920215805
+- program_created:
+    id: 33
+    timestamp_ns: 1790888795920252971
+- program_compile_started:
+    id: 33
+    timestamp_ns: 1790888795920503137
+- program_kernel_compile_finished:
+    id: 33
+    timestamp_ns: 1790888795920859522
+    duration_ns: 356385
+    watcher_kernel_id: 101
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 33
+    timestamp_ns: 1790888795920884039
+    duration_ns: 380902
+    watcher_kernel_id: 100
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 33
+    timestamp_ns: 1790888795920900944
+    duration_ns: 397807
+    watcher_kernel_id: 102
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_compile_finished:
+    id: 33
+    timestamp_ns: 1790888795920919342
+    duration_ns: 416205
+- program_destroyed:
+    id: 33
+    timestamp_ns: 1790888795938342148
+- program_created:
+    id: 34
+    timestamp_ns: 1790888795938370401
+- program_compile_started:
+    id: 34
+    timestamp_ns: 1790888795938614017
+- program_kernel_compile_finished:
+    id: 34
+    timestamp_ns: 1790888795938930432
+    duration_ns: 316415
+    watcher_kernel_id: 105
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_kernel_compile_finished:
+    id: 34
+    timestamp_ns: 1790888795938947558
+    duration_ns: 333541
+    watcher_kernel_id: 103
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 34
+    timestamp_ns: 1790888795938966416
+    duration_ns: 352399
+    watcher_kernel_id: 104
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_compile_finished:
+    id: 34
+    timestamp_ns: 1790888795938981719
+    duration_ns: 367702
+- program_destroyed:
+    id: 34
+    timestamp_ns: 1790888795956154760
+- program_created:
+    id: 35
+    timestamp_ns: 1790888795956184124
+- program_compile_started:
+    id: 35
+    timestamp_ns: 1790888795956425827
+- program_kernel_compile_finished:
+    id: 35
+    timestamp_ns: 1790888795956666469
+    duration_ns: 240642
+    watcher_kernel_id: 107
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 35
+    timestamp_ns: 1790888795956694381
+    duration_ns: 268554
+    watcher_kernel_id: 106
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 35
+    timestamp_ns: 1790888795956711446
+    duration_ns: 285619
+    watcher_kernel_id: 108
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_compile_finished:
+    id: 35
+    timestamp_ns: 1790888795957102885
+    duration_ns: 677058
+- program_destroyed:
+    id: 35
+    timestamp_ns: 1790888795974435185
+- program_created:
+    id: 36
+    timestamp_ns: 1790888795974463007
+- program_compile_started:
+    id: 36
+    timestamp_ns: 1790888795974704279
+- program_kernel_compile_finished:
+    id: 36
+    timestamp_ns: 1790888795974963188
+    duration_ns: 258909
+    watcher_kernel_id: 109
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 36
+    timestamp_ns: 1790888795974981065
+    duration_ns: 276786
+    watcher_kernel_id: 110
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 36
+    timestamp_ns: 1790888795975003028
+    duration_ns: 298749
+    watcher_kernel_id: 111
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_compile_finished:
+    id: 36
+    timestamp_ns: 1790888795975372193
+    duration_ns: 667914
+- program_destroyed:
+    id: 36
+    timestamp_ns: 1790888795992683522
+- program_created:
+    id: 37
+    timestamp_ns: 1790888795992716892
+- program_compile_started:
+    id: 37
+    timestamp_ns: 1790888795992968379
+- program_kernel_compile_finished:
+    id: 37
+    timestamp_ns: 1790888795993290063
+    duration_ns: 321684
+    watcher_kernel_id: 113
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 37
+    timestamp_ns: 1790888795993309141
+    duration_ns: 340762
+    watcher_kernel_id: 114
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_kernel_compile_finished:
+    id: 37
+    timestamp_ns: 1790888795993327819
+    duration_ns: 359440
+    watcher_kernel_id: 112
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_compile_finished:
+    id: 37
+    timestamp_ns: 1790888795993677595
+    duration_ns: 709216
+- program_destroyed:
+    id: 37
+    timestamp_ns: 1790888796011007542
+- program_created:
+    id: 38
+    timestamp_ns: 1790888796011042766
+- program_compile_started:
+    id: 38
+    timestamp_ns: 1790888796011290868
+- program_kernel_compile_finished:
+    id: 38
+    timestamp_ns: 1790888796011632782
+    duration_ns: 341914
+    watcher_kernel_id: 116
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 38
+    timestamp_ns: 1790888796011649157
+    duration_ns: 358289
+    watcher_kernel_id: 117
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_kernel_compile_finished:
+    id: 38
+    timestamp_ns: 1790888796011674955
+    duration_ns: 384087
+    watcher_kernel_id: 115
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_compile_finished:
+    id: 38
+    timestamp_ns: 1790888796012034896
+    duration_ns: 744028
+- program_destroyed:
+    id: 38
+    timestamp_ns: 1790888796029255639
+- program_created:
+    id: 39
+    timestamp_ns: 1790888796029285333
+- program_compile_started:
+    id: 39
+    timestamp_ns: 1790888796029530151
+- program_kernel_compile_finished:
+    id: 39
+    timestamp_ns: 1790888796029782561
+    duration_ns: 252410
+    watcher_kernel_id: 119
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 39
+    timestamp_ns: 1790888796029802400
+    duration_ns: 272249
+    watcher_kernel_id: 118
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 39
+    timestamp_ns: 1790888796029821289
+    duration_ns: 291138
+    watcher_kernel_id: 120
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_compile_finished:
+    id: 39
+    timestamp_ns: 1790888796029842991
+    duration_ns: 312840
+- program_destroyed:
+    id: 39
+    timestamp_ns: 1790888796047475613
+- program_created:
+    id: 40
+    timestamp_ns: 1790888796047504897
+- program_compile_started:
+    id: 40
+    timestamp_ns: 1790888796047745608
+- program_kernel_compile_finished:
+    id: 40
+    timestamp_ns: 1790888796048025940
+    duration_ns: 280332
+    watcher_kernel_id: 122
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 40
+    timestamp_ns: 1790888796048046611
+    duration_ns: 301003
+    watcher_kernel_id: 123
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_kernel_compile_finished:
+    id: 40
+    timestamp_ns: 1790888796048064327
+    duration_ns: 318719
+    watcher_kernel_id: 121
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_compile_finished:
+    id: 40
+    timestamp_ns: 1790888796048084337
+    duration_ns: 338729
+- program_destroyed:
+    id: 40
+    timestamp_ns: 1790888796065625852
+- program_created:
+    id: 41
+    timestamp_ns: 1790888796065654605
+- program_compile_started:
+    id: 41
+    timestamp_ns: 1790888796065900855
+- program_kernel_compile_finished:
+    id: 41
+    timestamp_ns: 1790888796066208958
+    duration_ns: 308103
+    watcher_kernel_id: 125
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 41
+    timestamp_ns: 1790888796066231652
+    duration_ns: 330797
+    watcher_kernel_id: 124
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 41
+    timestamp_ns: 1790888796066239965
+    duration_ns: 339110
+    watcher_kernel_id: 126
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_compile_finished:
+    id: 41
+    timestamp_ns: 1790888796066256800
+    duration_ns: 355945
+- program_destroyed:
+    id: 41
+    timestamp_ns: 1790888796083374638
+- program_created:
+    id: 42
+    timestamp_ns: 1790888796083409170
+- program_compile_started:
+    id: 42
+    timestamp_ns: 1790888796083657303
+- program_kernel_compile_finished:
+    id: 42
+    timestamp_ns: 1790888796083924885
+    duration_ns: 267582
+    watcher_kernel_id: 127
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 42
+    timestamp_ns: 1790888796083939577
+    duration_ns: 282274
+    watcher_kernel_id: 128
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 42
+    timestamp_ns: 1790888796083954449
+    duration_ns: 297146
+    watcher_kernel_id: 129
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_compile_finished:
+    id: 42
+    timestamp_ns: 1790888796083969512
+    duration_ns: 312209
+- program_destroyed:
+    id: 42
+    timestamp_ns: 1790888796101091806
+- program_created:
+    id: 43
+    timestamp_ns: 1790888796101124756
+- program_compile_started:
+    id: 43
+    timestamp_ns: 1790888796101374622
+- program_kernel_compile_finished:
+    id: 43
+    timestamp_ns: 1790888796101645659
+    duration_ns: 271037
+    watcher_kernel_id: 131
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 43
+    timestamp_ns: 1790888796101665168
+    duration_ns: 290546
+    watcher_kernel_id: 132
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_kernel_compile_finished:
+    id: 43
+    timestamp_ns: 1790888796101702304
+    duration_ns: 327682
+    watcher_kernel_id: 130
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_compile_finished:
+    id: 43
+    timestamp_ns: 1790888796102037848
+    duration_ns: 663226
+- program_destroyed:
+    id: 43
+    timestamp_ns: 1790888796119179231
+- program_created:
+    id: 44
+    timestamp_ns: 1790888796119210478
+- program_compile_started:
+    id: 44
+    timestamp_ns: 1790888796119455837
+- program_kernel_compile_finished:
+    id: 44
+    timestamp_ns: 1790888796119787776
+    duration_ns: 331939
+    watcher_kernel_id: 134
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 44
+    timestamp_ns: 1790888796119809729
+    duration_ns: 353892
+    watcher_kernel_id: 133
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 44
+    timestamp_ns: 1790888796119826824
+    duration_ns: 370987
+    watcher_kernel_id: 135
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_compile_finished:
+    id: 44
+    timestamp_ns: 1790888796119843299
+    duration_ns: 387462
+- program_destroyed:
+    id: 44
+    timestamp_ns: 1790888796137296972
+- program_created:
+    id: 45
+    timestamp_ns: 1790888796137326667
+- program_compile_started:
+    id: 45
+    timestamp_ns: 1790888796137566838
+- program_kernel_compile_finished:
+    id: 45
+    timestamp_ns: 1790888796137926428
+    duration_ns: 359590
+    watcher_kernel_id: 137
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 45
+    timestamp_ns: 1790888796137943403
+    duration_ns: 376565
+    watcher_kernel_id: 136
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 45
+    timestamp_ns: 1790888796137962372
+    duration_ns: 395534
+    watcher_kernel_id: 138
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_compile_finished:
+    id: 45
+    timestamp_ns: 1790888796137980128
+    duration_ns: 413290
+- program_destroyed:
+    id: 45
+    timestamp_ns: 1790888796155155343
+- program_created:
+    id: 46
+    timestamp_ns: 1790888796155186991
+- program_compile_started:
+    id: 46
+    timestamp_ns: 1790888796155434843
+- program_kernel_compile_finished:
+    id: 46
+    timestamp_ns: 1790888796155765249
+    duration_ns: 330406
+    watcher_kernel_id: 140
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 46
+    timestamp_ns: 1790888796155785971
+    duration_ns: 351128
+    watcher_kernel_id: 141
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_kernel_compile_finished:
+    id: 46
+    timestamp_ns: 1790888796155802415
+    duration_ns: 367572
+    watcher_kernel_id: 139
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_compile_finished:
+    id: 46
+    timestamp_ns: 1790888796155830447
+    duration_ns: 395604
+- program_destroyed:
+    id: 46
+    timestamp_ns: 1790888796172971571
+- program_created:
+    id: 47
+    timestamp_ns: 1790888796173009297
+- program_compile_started:
+    id: 47
+    timestamp_ns: 1790888796173261887
+- program_kernel_compile_finished:
+    id: 47
+    timestamp_ns: 1790888796173633685
+    duration_ns: 371798
+    watcher_kernel_id: 143
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 47
+    timestamp_ns: 1790888796173663059
+    duration_ns: 401172
+    watcher_kernel_id: 142
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 47
+    timestamp_ns: 1790888796173684241
+    duration_ns: 422354
+    watcher_kernel_id: 144
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_compile_finished:
+    id: 47
+    timestamp_ns: 1790888796173701357
+    duration_ns: 439470
+- program_destroyed:
+    id: 47
+    timestamp_ns: 1790888796190818344
+- program_created:
+    id: 48
+    timestamp_ns: 1790888796190848649
+- program_compile_started:
+    id: 48
+    timestamp_ns: 1790888796191091584
+- program_kernel_compile_finished:
+    id: 48
+    timestamp_ns: 1790888796191384965
+    duration_ns: 293381
+    watcher_kernel_id: 145
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 48
+    timestamp_ns: 1790888796191410093
+    duration_ns: 318509
+    watcher_kernel_id: 147
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_kernel_compile_finished:
+    id: 48
+    timestamp_ns: 1790888796191426387
+    duration_ns: 334803
+    watcher_kernel_id: 146
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_compile_finished:
+    id: 48
+    timestamp_ns: 1790888796191446568
+    duration_ns: 354984
+- program_destroyed:
+    id: 48
+    timestamp_ns: 1790888796208623204
+- program_created:
+    id: 49
+    timestamp_ns: 1790888796208653339
+- program_compile_started:
+    id: 49
+    timestamp_ns: 1790888796208895273
+- program_kernel_compile_finished:
+    id: 49
+    timestamp_ns: 1790888796209143256
+    duration_ns: 247983
+    watcher_kernel_id: 149
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 49
+    timestamp_ns: 1790888796209164317
+    duration_ns: 269044
+    watcher_kernel_id: 150
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_kernel_compile_finished:
+    id: 49
+    timestamp_ns: 1790888796209190436
+    duration_ns: 295163
+    watcher_kernel_id: 148
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_compile_finished:
+    id: 49
+    timestamp_ns: 1790888796209205599
+    duration_ns: 310326
+- program_destroyed:
+    id: 49
+    timestamp_ns: 1790888796226259922
+- program_created:
+    id: 50
+    timestamp_ns: 1790888796226288455
+- program_compile_started:
+    id: 50
+    timestamp_ns: 1790888796226531430
+- program_kernel_compile_finished:
+    id: 50
+    timestamp_ns: 1790888796226793243
+    duration_ns: 261813
+    watcher_kernel_id: 151
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 50
+    timestamp_ns: 1790888796226816728
+    duration_ns: 285298
+    watcher_kernel_id: 153
+    name: tanh_bw_scale_separated
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_scale_separated/517745790341020754/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_scale_separated.cpp
+- program_kernel_compile_finished:
+    id: 50
+    timestamp_ns: 1790888796226835276
+    duration_ns: 303846
+    watcher_kernel_id: 152
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_compile_finished:
+    id: 50
+    timestamp_ns: 1790888796226851511
+    duration_ns: 320081
+- program_destroyed:
+    id: 50
+    timestamp_ns: 1790888796243966124
+- program_created:
+    id: 51
+    timestamp_ns: 1790888796244001707
+- program_compile_started:
+    id: 51
+    timestamp_ns: 1790888796244248648
+- program_kernel_compile_finished:
+    id: 51
+    timestamp_ns: 1790888796244514648
+    duration_ns: 266000
+    watcher_kernel_id: 155
+    name: writer_unary
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/writer_unary/7997538366193256545/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/writer_unary.cpp
+- program_kernel_compile_finished:
+    id: 51
+    timestamp_ns: 1790888796244534868
+    duration_ns: 286220
+    watcher_kernel_id: 154
+    name: reader_dual_tiles
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/reader_dual_tiles/4679618561413340405/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp
+- program_kernel_compile_finished:
+    id: 51
+    timestamp_ns: 1790888796244551443
+    duration_ns: 302795
+    watcher_kernel_id: 156
+    name: tanh_bw_baseline
+    path: /localdev/ijankowski/tt-metal-cache/tt-metal-cache16910734055087701861/kernels/tanh_bw_baseline/12134087575411550312/
+    source: /home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/compute/tanh_bw_baseline.cpp
+- program_compile_finished:
+    id: 51
+    timestamp_ns: 1790888796244569010
+    duration_ns: 320362
+- program_destroyed:
+    id: 51
+    timestamp_ns: 1790888796261974020
