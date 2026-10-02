@@ -67,6 +67,25 @@ tile-wide guard for finite x and infinite g, and its ten-case smoke set includes
 one of those cases. The guard and full tile sequence remain unmeasured on device.
 The paper gate remains open for generated-device evidence and same-task baselines.
 
+**Wormhole development status (2 October 2026):** Branch `wh1` contains a first
+bring-up and fixes to the Metalium build, dispatch mode, kernel includes, and
+profiler parser. Those measurements are diagnostic and are excluded from paper
+claims. The run exposed two issues: native BF16 subnormal outputs need stage
+characterization, and an exceptional-input guard imposes a substantial cost in
+the tested kernel. The next candidate is a range-scoped exponential split that
+schedules the incoming gradient before tail attenuation. It has a host check
+and an unmeasured device kernel. The `--explore` run records its output sweep
+and a format-path probe without producing paper performance figures. The
+tail schedule is represented in the research IR and admitted by the synthesis
+search only under an explicit finite, `|x|>=4`, normal-output scope. The host
+IR evaluator does not model Wormhole SFPU rounding or pack behavior.
+
+The method contribution now needs an explicit target-capability gate: select a
+schedule only for input/output domains its lowering can satisfy, report
+unsupported output classes, and connect the selected IR schedule to the emitted
+device kernel. The current hand-written kernels still do not establish that
+compiler path.
+
 ## PLDI emphasis hierarchy
 
 ```

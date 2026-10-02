@@ -11,6 +11,10 @@ namespace bw_syn {
 enum class TtKernelKind {
   Factored,
   BaselineMaterialize,
+  TanhTailSplit4,
+  ProbeRawCopy,
+  ProbeComputeCopy,
+  ProbeComputeMul,
 };
 
 struct TtDeviceInfo {

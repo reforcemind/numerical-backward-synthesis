@@ -15,6 +15,9 @@ struct NumericalContract {
   bool baseline_flush_derivative_subnormals = true;
   std::uint32_t max_ulp_error = 1;
   std::optional<double> max_abs_x;
+  std::optional<double> min_abs_x;
+  bool finite_inputs_only = false;
+  bool normal_reference_output_only = false;
   bool require_signed_zero = true;
   bool require_ieee_exceptions = true;
   std::string notes;

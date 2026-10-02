@@ -144,6 +144,24 @@ int main() {
     assert(!truncated.ok);
   }
 
+  SynthConfig tail_cfg;
+  tail_cfg.kind = BackwardKind::Tanh;
+  tail_cfg.contract = c;
+  tail_cfg.contract.min_abs_x = 4.0;
+  tail_cfg.contract.finite_inputs_only = true;
+  tail_cfg.contract.normal_reference_output_only = true;
+  auto tail_synth = synthesize(tail_cfg);
+  bool saw_tail = false;
+  for (const auto& candidate : tail_synth.all) {
+    if (candidate.params.eval == EvalStrategy::TailSplit4) {
+      saw_tail = true;
+      assert(candidate.verified);
+      assert(candidate.verify.counters.tested > 0);
+      assert(candidate.verify.counters.skipped > 0);
+    }
+  }
+  assert(saw_tail);
+
   std::cout << "ok test_synth_semantics\n";
   return 0;
 }

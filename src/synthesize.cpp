@@ -134,6 +134,11 @@ static void preserve_infinite_gradient(Program& p) {
 }
 
 Program build_candidate_program(BackwardKind kind, const SynthParams& p, double alpha) {
+  if (p.eval == EvalStrategy::TailSplit4) {
+    if (kind != BackwardKind::Tanh)
+      throw std::invalid_argument("TailSplit4 currently supports tanh backward only");
+    return tanh_bw::ir_tail_split4();
+  }
   Program prog = base_program(kind, alpha);
   if (p.range_red == RangeReduction::ClampDomain)
     clamp_abs_x(prog);
@@ -189,6 +194,13 @@ SynthResult synthesize(const SynthConfig& cfg) {
     bad.eval = EvalStrategy::DirectMaterialize;
     bad.round = RoundStrategy::IntermediateAndFinal;
     space.push_back(bad);
+  }
+
+  if (cfg.kind == BackwardKind::Tanh && cfg.contract.min_abs_x && *cfg.contract.min_abs_x >= 4.0 &&
+      cfg.contract.finite_inputs_only && cfg.contract.normal_reference_output_only) {
+    SynthParams tail;
+    tail.eval = EvalStrategy::TailSplit4;
+    space.push_back(tail);
   }
 
   out.search_space_size = space.size();

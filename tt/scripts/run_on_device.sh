@@ -3,6 +3,14 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOT"
 export BW_SYN_ROOT="$ROOT"
+if [[ "$#" -gt 1 || ( "${1:-}" != "" && "${1:-}" != "--explore" ) ]]; then
+  echo "ERROR: usage: run_on_device.sh [--explore]" >&2
+  exit 2
+fi
+EXPLORE=0
+if [[ "${1:-}" == "--explore" ]]; then
+  EXPLORE=1
+fi
 
 if [[ -z "${TT_METAL_HOME:-}" ]]; then
   echo "ERROR: TT_METAL_HOME unset" >&2
@@ -43,7 +51,13 @@ export TT_METAL_COMMIT="$HEAD"
 
 BUILD="${BUILD_DIR:-build-tt}"
 mkdir -p results/hw results/paper
-BUILD_LOG="results/paper/build_${ARCH}_${HEAD}.log"
+if [[ "$EXPLORE" == "1" ]]; then
+  BUILD_LOG="results/hw/build_explore_${ARCH}_${HEAD}.log"
+  PROVENANCE="results/hw/explore_provenance_${ARCH}.txt"
+else
+  BUILD_LOG="results/paper/build_${ARCH}_${HEAD}.log"
+  PROVENANCE="results/paper/device_provenance_${ARCH}.txt"
+fi
 {
   printf 'bw_syn_commit=%s\n' "$(git rev-parse HEAD)"
   printf 'tt_metal_commit=%s\n' "$HEAD"
@@ -52,17 +66,44 @@ BUILD_LOG="results/paper/build_${ARCH}_${HEAD}.log"
   printf 'utc_start=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   uname -a
   sha256sum tt/kernels/common/tanh_factor.h tt/kernels/compute/tanh_bw_scale_separated.cpp \
-    tt/kernels/compute/tanh_bw_baseline.cpp
-} > "results/paper/device_provenance_${ARCH}.txt"
+    tt/kernels/compute/tanh_bw_baseline.cpp tt/kernels/compute/tanh_bw_tail_split4.cpp \
+    tt/kernels/compute/format_probe.cpp
+} > "$PROVENANCE"
 cmake -S . -B "$BUILD" -DCMAKE_BUILD_TYPE=Release -DBW_SYN_WITH_TTMETAL=ON 2>&1 | tee "$BUILD_LOG"
 cmake --build "$BUILD" -j "${BW_SYN_BUILD_JOBS:-2}" 2>&1 | tee -a "$BUILD_LOG"
+if [[ "$EXPLORE" == "1" ]]; then
+  unset TT_METAL_DEVICE_PROFILER
+  echo "Running exploratory correctness probes; these are not paper measurements"
+  if TT_METAL_SLOW_DISPATCH_MODE=1 "$BUILD/run_tt_harness" --device --tail-sweep \
+    --csv "results/hw/tail_${ARCH}.csv" 2>&1 | \
+    tee "results/hw/tail_${ARCH}_${HEAD}.log"; then
+    TAIL_STATUS=0
+  else
+    TAIL_STATUS=$?
+  fi
+  if [[ "$TAIL_STATUS" -gt 1 ]]; then
+    exit "$TAIL_STATUS"
+  fi
+  if TT_METAL_SLOW_DISPATCH_MODE=1 "$BUILD/run_tt_harness" --device --format-probe \
+    --csv "results/hw/format_${ARCH}.csv" 2>&1 | \
+    tee "results/hw/format_${ARCH}_${HEAD}.log"; then
+    FORMAT_STATUS=0
+  else
+    FORMAT_STATUS=$?
+  fi
+  if [[ "$TAIL_STATUS" -ne 0 ]]; then
+    exit "$TAIL_STATUS"
+  fi
+  exit "$FORMAT_STATUS"
+fi
 "$BUILD/export_results" --out results
 CSV="results/hw/${ARCH}.csv"
 PROFILE_LOG="$TT_METAL_HOME/generated/profiler/.logs/profile_log_device.csv"
 PROFILE_MARKER="$(mktemp)"
 trap 'rm -f "$PROFILE_MARKER"' EXIT
 export TT_METAL_DEVICE_PROFILER=1
-if "$BUILD/run_tt_harness" --device --csv "$CSV" 2>&1 | tee "results/paper/device_run_${ARCH}_${HEAD}.log"; then
+if TT_METAL_SLOW_DISPATCH_MODE=1 "$BUILD/run_tt_harness" --device --csv "$CSV" 2>&1 | \
+  tee "results/paper/device_run_${ARCH}_${HEAD}.log"; then
   HARNESS_STATUS=0
 else
   HARNESS_STATUS=$?

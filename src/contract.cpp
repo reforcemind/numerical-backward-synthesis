@@ -48,6 +48,22 @@ check_sample(const NumericalContract& c, BF16 x, BF16 g, BF16 actual, BF16 expec
   r.expected = expected_ref;
   r.actual = actual;
 
+  if (c.finite_inputs_only && (!x.is_finite() || !g.is_finite())) {
+    r.verdict = ContractVerdict::Skip;
+    r.detail = "nonfinite input outside contract domain";
+    return r;
+  }
+  if (c.min_abs_x && std::fabs(x.to_f64()) < *c.min_abs_x) {
+    r.verdict = ContractVerdict::Skip;
+    r.detail = "below |x| domain";
+    return r;
+  }
+  if (c.normal_reference_output_only && !expected_ref.is_normal()) {
+    r.verdict = ContractVerdict::Skip;
+    r.detail = "reference output outside normal range";
+    return r;
+  }
+
   if (c.max_abs_x.has_value()) {
     if (std::fabs(x.to_f64()) > *c.max_abs_x) {
       r.verdict = ContractVerdict::Skip;

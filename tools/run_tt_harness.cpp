@@ -14,17 +14,84 @@ int main(int argc, char** argv) {
   namespace fs = std::filesystem;
 
   DeviceMode prefer = DeviceMode::HostSim;
-  std::string out = "results/hw/host_sim.csv";
+  bool tail_sweep = false;
+  bool format_probe = false;
+  std::string out;
   for (int i = 1; i < argc; ++i) {
     std::string a = argv[i];
-    if (a == "--device") {
+    if (a == "--device")
       prefer = DeviceMode::TtMetal;
-      if (const char* arch = std::getenv("BW_SYN_ARCH"))
-        out = std::string("results/hw/") + arch + ".csv";
-      else
-        out = "results/hw/device.csv";
-    } else if (a == "--csv" && i + 1 < argc)
+    else if (a == "--tail-sweep")
+      tail_sweep = true;
+    else if (a == "--format-probe")
+      format_probe = true;
+    else if (a == "--csv" && i + 1 < argc)
       out = argv[++i];
+  }
+  if (tail_sweep && format_probe) {
+    std::cerr << "choose one of --tail-sweep and --format-probe\n";
+    return 2;
+  }
+
+  if (out.empty()) {
+    const char* arch = std::getenv("BW_SYN_ARCH");
+    const std::string suffix =
+        prefer == DeviceMode::TtMetal ? (arch ? arch : "device") : "host_sim";
+    out = "results/hw/" + std::string(tail_sweep ? "tail_" : (format_probe ? "format_" : "")) +
+          suffix + ".csv";
+  }
+  if (format_probe) {
+    FormatProbeReport rep;
+    try {
+      rep = run_format_probe(prefer);
+    } catch (const std::exception& ex) {
+      std::cerr << ex.what() << "\n";
+      return 3;
+    }
+    const fs::path path(out);
+    if (!path.parent_path().empty())
+      fs::create_directories(path.parent_path());
+    std::vector<std::string> rows;
+    for (const auto& row : rep.rows)
+      rows.push_back(std::string(prefer == DeviceMode::TtMetal ? "device_probe" : "host_model") +
+                     "," + rep.device.arch + "," + rep.device.tt_metal_commit + "," + row.stage +
+                     "," + hex16(row.x.bits) + "," + hex16(row.g.bits) + "," +
+                     hex16(row.expected.bits) + "," + hex16(row.observed.bits) + "," +
+                     (row.expected.bits == row.observed.bits ? "1" : "0"));
+    if (!write_csv(
+            out,
+            "label,arch,tt_metal_commit,stage,x_bits,g_bits,expected_bits,observed_bits,equal",
+            rows))
+      return 1;
+    std::cout << "format probe: " << rep.rows.size() << " observations written to " << out << "\n";
+    return 0;
+  }
+  if (tail_sweep) {
+    TailRunReport rep;
+    try {
+      rep = run_tail_tanh(prefer);
+    } catch (const std::exception& ex) {
+      std::cerr << ex.what() << "\n";
+      return 3;
+    }
+    const fs::path path(out);
+    if (!path.parent_path().empty())
+      fs::create_directories(path.parent_path());
+    std::vector<std::string> rows;
+    for (const auto& c : rep.cases)
+      rows.push_back(std::string(prefer == DeviceMode::TtMetal ? "device_probe" : "host_model") +
+                     "," + rep.device.arch + "," + rep.device.tt_metal_commit + "," +
+                     hex16(c.x.bits) + "," + hex16(c.g.bits) + "," + hex16(c.oracle.bits) + "," +
+                     hex16(c.observed.bits) + "," +
+                     (c.normal_output ? "finite_normal_output" : "outside_scope") + "," +
+                     (c.normal_output ? (c.pass ? "1" : "0") : ""));
+    if (!write_csv(out,
+                   "label,arch,tt_metal_commit,x_bits,g_bits,oracle_bits,observed_bits,scope,pass",
+                   rows))
+      return 1;
+    std::cout << "tail sweep: " << rep.normal_outputs << " normal-output cases of "
+              << rep.cases.size() << "; all pass=" << rep.all_normal_outputs_pass << "\n";
+    return rep.all_normal_outputs_pass ? 0 : 1;
   }
 
   HardwareRunReport rep;
@@ -37,7 +104,8 @@ int main(int argc, char** argv) {
 
   const char* label = prefer == DeviceMode::TtMetal ? "device" : "host_sim";
   const bool host = prefer == DeviceMode::HostSim;
-  fs::create_directories(fs::path(out).parent_path());
+  if (!fs::path(out).parent_path().empty())
+    fs::create_directories(fs::path(out).parent_path());
   std::vector<std::string> rows;
   for (const auto& c : rep.cases)
     rows.push_back(std::string(label) + "," + rep.device.arch + "," + rep.device.tt_metal_commit +

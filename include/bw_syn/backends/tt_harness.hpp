@@ -8,6 +8,7 @@
 #include <limits>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace bw_syn {
@@ -72,6 +73,40 @@ struct HardwareRunReport {
 };
 
 HardwareRunReport run_critical_tanh(DeviceMode prefer = DeviceMode::HostSim);
+
+struct TailCaseResult {
+  BF16 x;
+  BF16 g;
+  BF16 oracle;
+  BF16 observed;
+  bool normal_output{false};
+  bool pass{false};
+};
+
+struct TailRunReport {
+  DeviceInfo device;
+  std::vector<TailCaseResult> cases;
+  std::size_t normal_outputs{0};
+  bool all_normal_outputs_pass{false};
+};
+
+std::vector<std::pair<BF16, BF16>> tail_tanh_cases();
+TailRunReport run_tail_tanh(DeviceMode prefer = DeviceMode::HostSim);
+
+struct FormatProbeRow {
+  std::string stage;
+  BF16 x;
+  BF16 g;
+  BF16 expected;
+  BF16 observed;
+};
+
+struct FormatProbeReport {
+  DeviceInfo device;
+  std::vector<FormatProbeRow> rows;
+};
+
+FormatProbeReport run_format_probe(DeviceMode prefer = DeviceMode::HostSim);
 
 } // namespace tt_harness
 } // namespace bw_syn

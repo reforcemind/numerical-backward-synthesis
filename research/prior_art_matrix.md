@@ -10,8 +10,8 @@ model remains a **host** proxy.
 
 | Work | Venue / artifact | What it does | Overlap | Differentiation (this work) |
 |------|------------------|--------------|---------|-----------------------------|
-| [Herbie](https://herbie.uwplse.org/) (Panchekha et al.) | PLDI 2015+ | Accuracy-driven rewrite of FP *expressions* via sampling + rule search; later platform/ImplIR lowering | Expression rewrite, Pareto accuracy/cost | Targets general expressions vs reals, not **backward** \(g\cdot f'\) under a typed **numerical contract**, not BF16 intermediate false-zeros of \(f'\), not accelerator kernel selection |
-| Poseidon (Qian et al.) | CGO 2026 / EGRAPHS 2026 | Profile-guided numerical rewriting *inside a production compiler*; composes Herbie-style algebraic rewrites + precision tuning; DP selects global tradeoffs | Compiler-scale rewrite, accuracy/perf frontier | Operates on profiled general FP subgraphs. Does **not** synthesize scale-separated **backward kernels**, expose frexp/ScaleMul IR, or verify against a backward-specific false-zero contract |
+| [Herbie](https://herbie.uwplse.org/doc/latest/platforms.html) (Panchekha et al.) | PLDI 2015+ | Accuracy-driven FP expression rewriting; platform API permits custom representations, operations and costs | Can take the complete \(g\cdot f'\) expression and is a strong same-task baseline | Whether a configured Herbie platform can model Wormhole unpack/compute/pack stages and our output contract is an experiment, not an assumed gap |
+| [Poseidon](https://2026.cgo.org/details/cgo-2026-papers/38/Thinking-Fast-and-Correct-Automated-Rewriting-of-Numerical-Code-through-Compiler-Aug) (Qian et al.) | CGO 2026 | Profile-guided numerical rewriting in a compiler with accuracy/performance tradeoffs | Compiler-scale candidate search and selection | Run the same backward expressions and target constraints before asserting a method difference; a backward-only input name does not establish novelty |
 | RLibm / RLibm-prog / RLibm-all | POPL 2022, PLDI 2022 | Correctly rounded *elementary* libm via rounding-interval LP polynomials (often progressive / multi-format) | Low-prec math correctness | Synthesizes \(f(x)\) polynomials, not \(g\cdot f'(x)\) products; no unsafe-intermediate-derivative problem; not SFPU/backward IR |
 | MegaLibm | math-lib synthesis | Range reduction + approx synthesis for libm-style functions | Approx / range reduction knobs | Same structural gap as RLibm: forward elementary functions, not backward products |
 | Metalibm | codegen | Generator for elementary functions on CPU ISAs | Code generation | Hand/spec-driven elementary kernels; no contract synthesis over backward IR |
@@ -21,7 +21,7 @@ model remains a **host** proxy.
 | SLEEF / odd-even libm | optimized kernels | Hand-tuned math | Orthogonal | Deployment kernels, not synthesis |
 | Autograd / JAX-XLA remat | AD systems | Graph rematerialization | Orthogonal | Graph-level; do **not** fix BF16 flush of \(f'\) before \(\times g\) |
 | Scaled BLAS / extended exponents | numerics | Separate mantissa/exponent products | Representation idea | Not synthesis of backward programs under ULP/false-zero contracts |
-| [TT-Metalium Wormhole tanh derivative](https://github.com/tenstorrent/tt-metal/blob/9ac55ec9be762d2ce46eec193299eb34cff2f8d7/tt_metal/hw/ckernels/wormhole_b0/metal/llk_api/llk_sfpu/ckernel_sfpu_tanh_derivative.h) | source inspected at `9ac55ec9` | Piecewise polynomial and exponential tail for `sech²`; source comments report one-BF16-ULP derivative accuracy | Strong competing derivative kernel | Compare the complete `g·sech²(x)` result and cost on the pinned revision; the source comment is not our device evidence |
+| [TT-Metalium Wormhole tanh derivative](https://github.com/tenstorrent/tt-metal/blob/f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee/tt_metal/hw/ckernels/wormhole_b0/metal/llk_api/llk_sfpu/ckernel_sfpu_tanh_derivative.h) | source inspected at board pin `f9524a5f` | Piecewise polynomial and exponential tail for `sech²`; source saturates the derivative to zero for `|x|>=45` and reports one-BF16-ULP derivative accuracy | Strong existing derivative implementation | The target question is whether the complete product with `g` can be scheduled to keep a representable final gradient; source comments are not our device evidence |
 | TTNN `tanh_bw` | production | Public backward operation; implementation may change by revision | **Baseline to measure** | Run the same inputs through TTNN on the pinned build before claiming any device mismatch or advantage |
 
 ## Concrete comparison checklist (camera-ready)
@@ -29,7 +29,8 @@ model remains a **host** proxy.
 When writing Related Work, answer in one sentence each:
 
 1. **Herbie:** Run the same complete backward expressions and BF16 input sample;
-   document supported operations, search settings, numerical outputs, and cost.
+   include a custom platform when needed, and document supported operations,
+   search settings, numerical outputs, and cost.
 2. **Poseidon:** Compare the same expressions if its compiler pipeline supports
    the target; document any unsupported representation or target constraint.
 3. **RLibm:** Test whether a better elementary-function approximation changes

@@ -9,6 +9,27 @@ The tile API names were checked against upstream `tt-metal` source at
 not a substitute for the SHA recorded on the Wormhole machine.
 The first on-board results, open issues and the porting notes for pin `f9524a5f`
 are in [`research/device_bringup_wormhole.md`](../research/device_bringup_wormhole.md).
+Those measurements are diagnostic and excluded from paper performance claims.
+
+## Next Wormhole exploration
+
+After pulling branch `wh2`, use the same `TT_METAL_HOME` and
+`BW_SYN_ARCH=wormhole` environment as below, with `torch` and `ttnn` optional
+for this mode:
+
+```bash
+./tt/scripts/run_on_device.sh --explore
+```
+
+This builds the pinned Metalium source target, checks a finite tanh tail
+candidate on BF16 inputs whose reference outputs are normal, then records raw
+BF16 transport, compute-copy, and multiply probes. The files are
+`results/hw/tail_wormhole.csv`, `results/hw/format_wormhole.csv`, and the
+matching `results/hw/*_wormhole_*.log` plus
+`results/hw/explore_provenance_wormhole.txt`. Send these files and the pinned
+`tt/pin/tt-metal.COMMIT` after the run. They are development diagnostics,
+not paper measurements. The tail candidate has no special-input guard and
+does not claim subnormal output support or full-domain correctness.
 
 ## Roles
 

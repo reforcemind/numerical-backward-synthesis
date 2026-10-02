@@ -47,6 +47,16 @@ int main() {
   BF16 tiny = contract_reference(BackwardKind::Tanh, c, BF16::from_f64(0.0), sub);
   assert(tiny.is_finite());
 
+  auto tail = c;
+  tail.min_abs_x = 4.0;
+  tail.finite_inputs_only = true;
+  tail.normal_reference_output_only = true;
+  assert(check_sample(tail, BF16::from_f64(3), g, exp, exp).verdict == ContractVerdict::Skip);
+  assert(check_sample(tail, BF16::inf(false), g, exp, exp).verdict == ContractVerdict::Skip);
+  assert(check_sample(tail, x, g, sub, sub).verdict == ContractVerdict::Skip);
+  assert(check_sample(tail, BF16::from_f64(4), g, BF16::from_f64(4), BF16::from_f64(4)).verdict ==
+         ContractVerdict::Pass);
+
   Program midpoint;
   const int input = midpoint.add(Node{OpKind::InputG});
   midpoint.result = midpoint.add(Node{OpKind::RoundBF16, {input}});

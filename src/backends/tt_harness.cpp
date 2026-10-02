@@ -3,6 +3,7 @@
 #include "bw_syn/backends/tt_device.hpp"
 #include "bw_syn/functions/tanh_bw.hpp"
 
+#include <algorithm>
 #include <chrono>
 #include <cstdlib>
 #include <fstream>
@@ -10,6 +11,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 namespace bw_syn {
 namespace tt_harness {
@@ -171,6 +173,128 @@ HardwareRunReport run_critical_tanh(DeviceMode prefer) {
 
   rep.host_wall_ms =
       std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
+  return rep;
+}
+
+std::vector<std::pair<BF16, BF16>> tail_tanh_cases() {
+  const BF16 gradients[] = {BF16::from_f64(1),
+                            BF16::from_f64(4),
+                            BF16::from_f64(256),
+                            BF16::from_f64(4294967296.0),
+                            BF16::max_finite(),
+                            BF16::from_bits(0xff7f)};
+  std::vector<std::pair<BF16, BF16>> cases;
+  const std::uint32_t first = BF16::from_f64(4).bits;
+  const std::uint32_t last = BF16::from_f64(88.5).bits;
+  for (std::uint32_t bits = first; bits <= last; bits += 4) {
+    const BF16 x = BF16::from_bits(static_cast<std::uint16_t>(bits));
+    for (const BF16 g : gradients)
+      cases.emplace_back(x, g);
+  }
+  for (const BF16 x : {BF16::from_f64(45),
+                       BF16::from_f64(88.5),
+                       BF16::from_f64(-4),
+                       BF16::from_f64(-45),
+                       BF16::from_f64(-88.5)})
+    for (const BF16 g : gradients)
+      cases.emplace_back(x, g);
+  return cases;
+}
+
+TailRunReport run_tail_tanh(DeviceMode prefer) {
+  TailRunReport rep;
+  rep.device = probe_device();
+  const auto cases = tail_tanh_cases();
+  std::vector<BF16> observed;
+  observed.reserve(cases.size());
+
+  if (prefer == DeviceMode::TtMetal) {
+#if defined(BW_SYN_WITH_TTMETAL)
+    if (!rep.device.available)
+      throw std::runtime_error("--device requires TT_METAL_HOME");
+    require_device_pin(rep.device);
+    TtDeviceSession session(tt_probe().device_id);
+    constexpr std::size_t batch_size = 128;
+    for (std::size_t base = 0; base < cases.size(); base += batch_size) {
+      const auto end = std::min(base + batch_size, cases.size());
+      std::vector<BF16> xs, gs;
+      xs.reserve(end - base);
+      gs.reserve(end - base);
+      for (std::size_t i = base; i < end; ++i) {
+        xs.push_back(cases[i].first);
+        gs.push_back(cases[i].second);
+      }
+      auto batch = session.eval_batch(TtKernelKind::TanhTailSplit4, xs, gs);
+      observed.insert(observed.end(), batch.begin(), batch.end());
+    }
+#else
+    throw std::runtime_error("--device requires -DBW_SYN_WITH_TTMETAL=ON");
+#endif
+  } else {
+    const auto contract = NumericalContract::bf16_default("tanh_backward");
+    for (const auto& [x, g] : cases)
+      observed.push_back(tanh_bw::tail_split4_host(x, g, contract));
+  }
+
+  const auto contract = NumericalContract::bf16_default("tanh_backward");
+  rep.all_normal_outputs_pass = true;
+  for (std::size_t i = 0; i < cases.size(); ++i) {
+    const auto [x, g] = cases[i];
+    const BF16 oracle = contract_reference(BackwardKind::Tanh, contract, x, g);
+    const bool in_scope = oracle.is_normal();
+    const bool pass = in_scope && check_sample(contract, x, g, observed[i], oracle).verdict ==
+                                      ContractVerdict::Pass;
+    if (in_scope) {
+      ++rep.normal_outputs;
+      if (!pass)
+        rep.all_normal_outputs_pass = false;
+    }
+    rep.cases.push_back(TailCaseResult{x, g, oracle, observed[i], in_scope, pass});
+  }
+  if (rep.normal_outputs == 0)
+    throw std::runtime_error("tail sweep has no normal-output cases");
+  return rep;
+}
+
+FormatProbeReport run_format_probe(DeviceMode prefer) {
+  FormatProbeReport rep;
+  rep.device = probe_device();
+#if defined(BW_SYN_WITH_TTMETAL)
+  std::unique_ptr<TtDeviceSession> session;
+#endif
+  if (prefer == DeviceMode::TtMetal) {
+#if defined(BW_SYN_WITH_TTMETAL)
+    if (!rep.device.available)
+      throw std::runtime_error("--device requires TT_METAL_HOME");
+    require_device_pin(rep.device);
+    session = std::make_unique<TtDeviceSession>(tt_probe().device_id);
+#else
+    throw std::runtime_error("--device requires -DBW_SYN_WITH_TTMETAL=ON");
+#endif
+  }
+
+  auto record = [&](const std::string& stage, TtKernelKind kind, BF16 x, BF16 g) {
+    const BF16 expected =
+        kind == TtKernelKind::ProbeComputeMul ? BF16::from_f64(x.to_f64() * g.to_f64()) : x;
+    BF16 observed = expected;
+#if defined(BW_SYN_WITH_TTMETAL)
+    if (session)
+      observed = session->eval(kind, x, g);
+#endif
+    rep.rows.push_back(FormatProbeRow{stage, x, g, expected, observed});
+  };
+  const BF16 one = BF16::from_f64(1);
+  const BF16 half = BF16::from_f64(0.5);
+  const BF16 sub = BF16::min_subnormal();
+  const BF16 normal = BF16::min_normal();
+  record("raw_copy", TtKernelKind::ProbeRawCopy, sub, one);
+  record("raw_copy", TtKernelKind::ProbeRawCopy, normal, one);
+  record("compute_copy", TtKernelKind::ProbeComputeCopy, sub, one);
+  record("compute_copy", TtKernelKind::ProbeComputeCopy, normal, one);
+  record("compute_mul", TtKernelKind::ProbeComputeMul, normal, half);
+  record("compute_mul", TtKernelKind::ProbeComputeMul, BF16::from_bits(0x8080), half);
+  record("compute_mul", TtKernelKind::ProbeComputeMul, normal, one);
+  record("compute_mul", TtKernelKind::ProbeComputeMul, BF16::from_bits(0x0100), half);
   return rep;
 }
 

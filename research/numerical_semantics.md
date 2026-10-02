@@ -26,6 +26,7 @@ This is **not** a claim of correctly rounded real arithmetic.
 | Signed zero | required | when reference is ±0 |
 | Exceptions | policy below | NaN / Inf handled explicitly |
 | Domain | all finite BF16 | optional `max_abs_x` |
+| Scoped domain | off | `min_abs_x`, `finite_inputs_only`, and `normal_reference_output_only` can restrict an exploratory candidate; skipped pairs are reported |
 
 **We do not invent stronger guarantees than the implementation supports.** Device semantics
 may differ and must be measured (`label=device`).
@@ -91,6 +92,35 @@ BF16/FTZ of \(f'\), mid-stream mantissa round, subnormal flush, exp-sum overflow
 - Derivative singularities (none for tanh/sigmoid; ELU kink at 0)
 
 Scaling alone does **not** guarantee correct rounding if intermediate rounding is reintroduced.
+
+## Exploratory tanh tail schedule
+
+For finite BF16 `g`, let `a=|x|` and `q=exp(-a/2)`. The experimental tail
+candidate evaluates `g*q`, multiplies by 4, then multiplies by `q` three more
+times. It is evaluated only for `a>=4` and **normal** BF16 reference outputs.
+The exact tanh backward product is `4*g*q^4/(1+q^4)^2`; the candidate omits
+the denominator. Its relative overestimate is at most
+`2*exp(-8)+exp(-16)<0.000672` on this domain, before operation and exponential
+approximation error. This bound alone does not prove the device's 1-ULP contract.
+
+For a normal output and a normal, finite BF16 gradient, `q` and every scheduled
+FP32 product are normal in ideal arithmetic. The output condition and the BF16
+maximum bound `a` to approximately 88.7, where `q` is far above FP32's minimum
+normal. At `a>=4`, `4*q<1`, so the first two operations do not overflow and
+all later products decrease toward the normal output. This is a range argument
+for the schedule, not a guarantee about the Wormhole exponential or packer.
+The scoped IR candidate is `tanh_bw::ir_tail_split4`; synthesis includes it only
+when the contract requests `min_abs_x>=4`, finite inputs, and normal reference
+outputs. The hand-written device candidate is in
+`tt/kernels/compute/tanh_bw_tail_split4.cpp`; the independent FP32 host
+calculation is `tanh_bw::tail_split4_host`. Source correspondence and device
+semantics are still unverified. The normal-output filter is a verification
+scope, not an implemented runtime dispatch predicate.
+
+BF16 subnormal outputs remain outside this candidate's declared domain. The
+`--format-probe` hardware path compares raw BF16 transport, compute copy, and
+normal-times-normal subnormal production. Do not infer a device FTZ stage from
+the prior tanh run before this probe is measured.
 
 The synthesis verifier evaluates candidate IR on exceptional inputs instead of
 substituting the reference. Tanh and sigmoid candidates carry a

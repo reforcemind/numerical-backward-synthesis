@@ -1,5 +1,9 @@
 # Wormhole device bring-up: tanh backward (first measurements)
 
+**Diagnostic record only.** This run is excluded from paper performance tables.
+The `wh2` exploration replaces its ten-tile workload with a finite tail sweep
+and adds a format-path probe; those results have not been run on hardware.
+
 First on-board run of the two tanh-backward compute kernels and the TTNN
 `tanh_bw` baseline. Everything here is **device**-labelled. It comes from one
 session on one chip and is a bring-up record, not a paper result. See
@@ -94,8 +98,9 @@ The chip clock is reported as 1000 MHz in the profiler header, so 1 cycle ≈ 1 
 
 ### Interpretation (hedged)
 
-- **The kernels are math-bound.** TRISC1 is the longest zone in every variant, and
-  its length equals the launch span.
+- TRISC1 is the longest zone in these runs. The zone includes circular-buffer
+  waits, so this observation alone does not establish math utilization or a
+  math-bound kernel.
 - **Materialization is close to free here.** In the materialized kernel the extra
   pack to `cb_tmp` and unpack back overlap with SFPU work on the other TRISCs. So
   "pack once" saves only about 6% (4,207 → 3,965). The

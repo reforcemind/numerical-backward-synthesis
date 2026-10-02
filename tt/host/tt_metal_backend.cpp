@@ -60,6 +60,13 @@ std::string compute_kernel_path(TtKernelKind kind) {
     return kernel_file("tt/kernels/compute/tanh_bw_scale_separated.cpp");
   case TtKernelKind::BaselineMaterialize:
     return kernel_file("tt/kernels/compute/tanh_bw_baseline.cpp");
+  case TtKernelKind::TanhTailSplit4:
+    return kernel_file("tt/kernels/compute/tanh_bw_tail_split4.cpp");
+  case TtKernelKind::ProbeComputeCopy:
+  case TtKernelKind::ProbeComputeMul:
+    return kernel_file("tt/kernels/compute/format_probe.cpp");
+  case TtKernelKind::ProbeRawCopy:
+    break;
   }
   throw std::runtime_error("unknown TtKernelKind");
 }
@@ -76,6 +83,9 @@ std::vector<BF16> run_on_device(MetalDevice* device,
                                 const std::vector<BF16>& gs) {
   if (xs.size() != gs.size() || xs.empty())
     throw std::runtime_error("tt batch size mismatch");
+  if ((kind == TtKernelKind::ProbeRawCopy || kind == TtKernelKind::ProbeComputeCopy) &&
+      xs.size() != 1)
+    throw std::runtime_error("copy probes require one tile");
 
   const std::uint32_t n_tiles = static_cast<std::uint32_t>(xs.size());
   metal::Program program = metal::CreateProgram();
@@ -127,16 +137,10 @@ std::vector<BF16> run_on_device(MetalDevice* device,
       program,
       kernel_file("tt/kernels/dataflow/writer_unary.cpp"),
       core,
-      metal::DataMovementConfig{.processor = metal::DataMovementProcessor::RISCV_1,
-                                .noc = metal::NOC::RISCV_1_default,
-                                .compile_args = {BW_SYN_CB_Y}});
-  auto compute =
-      metal::CreateKernel(program,
-                          compute_kernel_path(kind),
-                          core,
-                          metal::ComputeConfig{.math_fidelity = metal::MathFidelity::HiFi4,
-                                               .fp32_dest_acc_en = true,
-                                               .math_approx_mode = false});
+      metal::DataMovementConfig{
+          .processor = metal::DataMovementProcessor::RISCV_1,
+          .noc = metal::NOC::RISCV_1_default,
+          .compile_args = {kind == TtKernelKind::ProbeRawCopy ? BW_SYN_CB_X : BW_SYN_CB_Y}});
 
   metal::SetRuntimeArgs(program,
                         reader,
@@ -146,7 +150,20 @@ std::vector<BF16> run_on_device(MetalDevice* device,
                          n_tiles});
   metal::SetRuntimeArgs(
       program, writer, core, {static_cast<std::uint32_t>(y_buf->address()), n_tiles});
-  metal::SetRuntimeArgs(program, compute, core, {n_tiles});
+  if (kind != TtKernelKind::ProbeRawCopy) {
+    std::vector<std::uint32_t> compute_args;
+    if (kind == TtKernelKind::ProbeComputeCopy || kind == TtKernelKind::ProbeComputeMul)
+      compute_args.push_back(kind == TtKernelKind::ProbeComputeMul ? 1 : 0);
+    auto compute =
+        metal::CreateKernel(program,
+                            compute_kernel_path(kind),
+                            core,
+                            metal::ComputeConfig{.math_fidelity = metal::MathFidelity::HiFi4,
+                                                 .fp32_dest_acc_en = true,
+                                                 .math_approx_mode = false,
+                                                 .compile_args = compute_args});
+    metal::SetRuntimeArgs(program, compute, core, {n_tiles});
+  }
 
   enqueue_or_launch(device, program);
 

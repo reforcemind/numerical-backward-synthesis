@@ -19,6 +19,7 @@ enum class RangeReduction {
 enum class EvalStrategy {
   DirectMaterialize, // IR rounds and flushes the derivative before multiplication
   ScaleSeparated,
+  TailSplit4,
 };
 
 enum class NormStrategy {

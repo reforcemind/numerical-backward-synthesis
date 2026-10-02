@@ -3,6 +3,8 @@
 #include "bw_syn/detail/ir_build.hpp"
 #include "bw_syn/detail/scale_eval.hpp"
 
+#include <cmath>
+
 namespace bw_syn {
 namespace tanh_bw {
 
@@ -12,6 +14,19 @@ BF16 baseline_materialize(BF16 x, BF16 g, const NumericalContract& c) {
 
 BF16 scale_separated(BF16 x, BF16 g, const NumericalContract& c) {
   return detail::scale_separated_product(BackwardKind::Tanh, x, g, c);
+}
+
+BF16 tail_split4_host(BF16 x, BF16 g, const NumericalContract& c) {
+  const float q = std::exp(-0.5f * std::fabs(x.to_f32()));
+  float value = g.to_f32() * q;
+  value *= 4.0f;
+  value *= q;
+  value *= q;
+  value *= q;
+  BF16 out = round_to_bf16(value, c.output_round);
+  if (c.flush_output_subnormals)
+    out = flush_subnormals(out);
+  return out;
 }
 
 static int sech2(Program& p, int x) {
@@ -58,6 +73,24 @@ Program ir_factored() {
   const int gh = p.add(Node{OpKind::Mul, {g, h}});
   const int product = p.add(Node{OpKind::Mul, {gh, h}});
   p.result = p.add(Node{OpKind::RoundBF16, {product}});
+  return p;
+}
+
+Program ir_tail_split4() {
+  Program p;
+  p.name = "tanh_bw_tail_split4";
+  const int x = p.add(Node{OpKind::InputX});
+  const int g = p.add(Node{OpKind::InputG});
+  const int half = p.add(Node{OpKind::ConstF64, {}, 0.5});
+  const int four = p.add(Node{OpKind::ConstF64, {}, 4.0});
+  const int ax = p.add(Node{OpKind::Abs, {x}});
+  const int q =
+      p.add(Node{OpKind::Exp, {p.add(Node{OpKind::Neg, {p.add(Node{OpKind::Mul, {half, ax}})}})}});
+  int value = p.add(Node{OpKind::Mul, {g, q}});
+  value = p.add(Node{OpKind::Mul, {value, four}});
+  for (int i = 0; i < 3; ++i)
+    value = p.add(Node{OpKind::Mul, {value, q}});
+  p.result = p.add(Node{OpKind::RoundBF16, {value}});
   return p;
 }
 
