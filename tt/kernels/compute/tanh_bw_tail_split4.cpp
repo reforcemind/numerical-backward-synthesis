@@ -1,5 +1,6 @@
 #include "../common/cb_indices.h"
 #include "api/compute/common.h"
+#include "api/compute/compute_kernel_api.h"
 #include "api/compute/eltwise_binary_sfpu.h"
 #include "api/compute/eltwise_unary/binop_with_scalar.h"
 #include "api/compute/eltwise_unary/exp.h"

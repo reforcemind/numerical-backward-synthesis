@@ -79,19 +79,27 @@ struct TailCaseResult {
   BF16 g;
   BF16 oracle;
   BF16 observed;
+  BF16 baseline;
   bool normal_output{false};
   bool pass{false};
+  bool baseline_pass{false};
 };
 
 struct TailRunReport {
   DeviceInfo device;
   std::vector<TailCaseResult> cases;
   std::size_t normal_outputs{0};
+  std::size_t baseline_normal_passes{0};
   bool all_normal_outputs_pass{false};
+  // Timed runs reuse one fixed batch of normal-output tiles for both kernels.
+  std::size_t timing_tiles{0};
+  int device_warmup_runs{0};
+  int device_measured_runs{0};
 };
 
 std::vector<std::pair<BF16, BF16>> tail_tanh_cases();
-TailRunReport run_tail_tanh(DeviceMode prefer = DeviceMode::HostSim);
+inline constexpr std::size_t kTailTimingTiles = 128;
+TailRunReport run_tail_tanh(DeviceMode prefer = DeviceMode::HostSim, bool timed = false);
 
 struct FormatProbeRow {
   std::string stage;

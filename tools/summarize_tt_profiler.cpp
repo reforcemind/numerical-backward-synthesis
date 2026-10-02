@@ -75,7 +75,8 @@ std::vector<Sample> launches(const std::string& zone,
   return out;
 }
 
-std::map<std::string, std::vector<Sample>> parse(const std::string& path) {
+std::map<std::string, std::vector<Sample>> parse(const std::string& path,
+                                                 const std::vector<std::string>& zones) {
   std::ifstream in(path);
   if (!in)
     throw std::runtime_error("cannot open profiler CSV: " + path);
@@ -103,7 +104,7 @@ std::map<std::string, std::vector<Sample>> parse(const std::string& path) {
     if (row.size() <= largest)
       continue;
     const auto& zone = row[zone_col];
-    if (zone != "BW_SYN_TANH_FACTORED" && zone != "BW_SYN_TANH_MATERIALIZED")
+    if (std::find(zones.begin(), zones.end(), zone) == zones.end())
       continue;
     const auto core = row[x_col] + "-" + row[y_col];
     const Key key{zone, row[x_col], row[y_col], row[risc_col]};
@@ -143,20 +144,25 @@ std::string number(double value) {
 } // namespace
 
 int main(int argc, char** argv) {
-  if (argc != 5) {
-    std::cerr << "usage: summarize_tt_profiler RAW_CSV OUT_CSV ARCH TT_METAL_SHA\n";
+  if (argc != 5 && argc < 7) {
+    std::cerr << "usage: summarize_tt_profiler RAW_CSV OUT_CSV ARCH TT_METAL_SHA [TILES ZONE...]\n";
     return 2;
   }
   try {
-    const std::size_t tiles = bw_syn::tt_harness::critical_cases().size();
+    std::size_t tiles = bw_syn::tt_harness::critical_cases().size();
+    std::vector<std::string> zones{"BW_SYN_TANH_FACTORED", "BW_SYN_TANH_MATERIALIZED"};
+    if (argc > 5) {
+      tiles = std::stoul(argv[5]);
+      zones.assign(argv + 6, argv + argc);
+    }
     constexpr std::size_t measured = bw_syn::tt_harness::kDeviceMeasuredRuns;
     constexpr std::size_t warmup = bw_syn::tt_harness::kDeviceWarmupRuns;
-    const auto samples = parse(argv[1]);
+    const auto samples = parse(argv[1], zones);
     std::vector<std::string> rows;
-    for (const auto& zone : {"BW_SYN_TANH_FACTORED", "BW_SYN_TANH_MATERIALIZED"}) {
+    for (const auto& zone : zones) {
       const auto found = samples.find(zone);
       if (found == samples.end() || found->second.size() < measured + warmup + 1)
-        throw std::runtime_error(std::string("too few profiler samples for ") + zone);
+        throw std::runtime_error("too few profiler samples for " + zone);
       auto ordered = found->second;
       std::sort(ordered.begin(), ordered.end());
       std::vector<std::uint64_t> cycles;

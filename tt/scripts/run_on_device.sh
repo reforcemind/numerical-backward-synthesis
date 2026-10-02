@@ -3,13 +3,17 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOT"
 export BW_SYN_ROOT="$ROOT"
-if [[ "$#" -gt 1 || ( "${1:-}" != "" && "${1:-}" != "--explore" ) ]]; then
-  echo "ERROR: usage: run_on_device.sh [--explore]" >&2
+if [[ "$#" -gt 1 || ( "${1:-}" != "" && "${1:-}" != "--explore" && "${1:-}" != "--tail-timing" ) ]]; then
+  echo "ERROR: usage: run_on_device.sh [--explore | --tail-timing]" >&2
   exit 2
 fi
 EXPLORE=0
+TAIL_TIMING=0
 if [[ "${1:-}" == "--explore" ]]; then
   EXPLORE=1
+elif [[ "${1:-}" == "--tail-timing" ]]; then
+  EXPLORE=1
+  TAIL_TIMING=1
 fi
 
 if [[ -z "${TT_METAL_HOME:-}" ]]; then
@@ -71,6 +75,33 @@ fi
 } > "$PROVENANCE"
 cmake -S . -B "$BUILD" -DCMAKE_BUILD_TYPE=Release -DBW_SYN_WITH_TTMETAL=ON 2>&1 | tee "$BUILD_LOG"
 cmake --build "$BUILD" -j "${BW_SYN_BUILD_JOBS:-2}" 2>&1 | tee -a "$BUILD_LOG"
+if [[ "$TAIL_TIMING" == "1" ]]; then
+  # Diagnostic cycles for the scoped tail kernel vs materialized on the same finite tail tiles.
+  echo "Running tail timing; finite tail inputs only, not paper measurements"
+  PROFILE_LOG="$TT_METAL_HOME/generated/profiler/.logs/profile_log_device.csv"
+  PROFILE_MARKER="$(mktemp)"
+  trap 'rm -f "$PROFILE_MARKER"' EXIT
+  if TT_METAL_DEVICE_PROFILER=1 TT_METAL_SLOW_DISPATCH_MODE=1 "$BUILD/run_tt_harness" --device \
+    --tail-sweep --timed --csv "results/hw/tail_timed_${ARCH}.csv" 2>&1 | \
+    tee "results/hw/tail_timed_${ARCH}_${HEAD}.log"; then
+    TAIL_STATUS=0
+  else
+    TAIL_STATUS=$?
+  fi
+  if [[ "$TAIL_STATUS" -gt 1 ]]; then
+    exit "$TAIL_STATUS"
+  fi
+  if [[ ! -f "$PROFILE_LOG" || ! "$PROFILE_LOG" -nt "$PROFILE_MARKER" ]]; then
+    echo "ERROR: no fresh device profiler CSV at $PROFILE_LOG" >&2
+    exit 4
+  fi
+  RAW_PROFILE="results/hw/raw_tail_profiler_${ARCH}_${HEAD}.csv"
+  cp "$PROFILE_LOG" "$RAW_PROFILE"
+  "$BUILD/summarize_tt_profiler" "$RAW_PROFILE" "results/hw/tail_cycles_${ARCH}.csv" "$ARCH" \
+    "$HEAD" 128 BW_SYN_TANH_TAIL_SPLIT4 BW_SYN_TANH_MATERIALIZED || exit 4
+  cat "results/hw/tail_cycles_${ARCH}.csv"
+  exit "$TAIL_STATUS"
+fi
 if [[ "$EXPLORE" == "1" ]]; then
   unset TT_METAL_DEVICE_PROFILER
   echo "Running exploratory correctness probes; these are not paper measurements"

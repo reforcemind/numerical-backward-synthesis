@@ -16,6 +16,7 @@ int main(int argc, char** argv) {
   DeviceMode prefer = DeviceMode::HostSim;
   bool tail_sweep = false;
   bool format_probe = false;
+  bool timed = false;
   std::string out;
   for (int i = 1; i < argc; ++i) {
     std::string a = argv[i];
@@ -25,11 +26,17 @@ int main(int argc, char** argv) {
       tail_sweep = true;
     else if (a == "--format-probe")
       format_probe = true;
+    else if (a == "--timed")
+      timed = true;
     else if (a == "--csv" && i + 1 < argc)
       out = argv[++i];
   }
   if (tail_sweep && format_probe) {
     std::cerr << "choose one of --tail-sweep and --format-probe\n";
+    return 2;
+  }
+  if (timed && !tail_sweep) {
+    std::cerr << "--timed applies only to --tail-sweep\n";
     return 2;
   }
 
@@ -69,7 +76,7 @@ int main(int argc, char** argv) {
   if (tail_sweep) {
     TailRunReport rep;
     try {
-      rep = run_tail_tanh(prefer);
+      rep = run_tail_tanh(prefer, timed);
     } catch (const std::exception& ex) {
       std::cerr << ex.what() << "\n";
       return 3;
@@ -84,13 +91,20 @@ int main(int argc, char** argv) {
                      hex16(c.x.bits) + "," + hex16(c.g.bits) + "," + hex16(c.oracle.bits) + "," +
                      hex16(c.observed.bits) + "," +
                      (c.normal_output ? "finite_normal_output" : "outside_scope") + "," +
-                     (c.normal_output ? (c.pass ? "1" : "0") : ""));
+                     (c.normal_output ? (c.pass ? "1" : "0") : "") + "," +
+                     hex16(c.baseline.bits) + "," +
+                     (c.normal_output ? (c.baseline_pass ? "1" : "0") : ""));
     if (!write_csv(out,
-                   "label,arch,tt_metal_commit,x_bits,g_bits,oracle_bits,observed_bits,scope,pass",
+                   "label,arch,tt_metal_commit,x_bits,g_bits,oracle_bits,observed_bits,scope,pass,"
+                   "baseline_bits,baseline_pass",
                    rows))
       return 1;
     std::cout << "tail sweep: " << rep.normal_outputs << " normal-output cases of "
-              << rep.cases.size() << "; all pass=" << rep.all_normal_outputs_pass << "\n";
+              << rep.cases.size() << "; all pass=" << rep.all_normal_outputs_pass
+              << "; materialized baseline passes " << rep.baseline_normal_passes << "\n";
+    if (rep.timing_tiles != 0)
+      std::cout << "tail timing: " << rep.timing_tiles << " tiles, " << rep.device_warmup_runs
+                << " warmup + " << rep.device_measured_runs << " measured launches per kernel\n";
     return rep.all_normal_outputs_pass ? 0 : 1;
   }
 

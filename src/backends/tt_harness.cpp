@@ -201,12 +201,18 @@ std::vector<std::pair<BF16, BF16>> tail_tanh_cases() {
   return cases;
 }
 
-TailRunReport run_tail_tanh(DeviceMode prefer) {
+TailRunReport run_tail_tanh(DeviceMode prefer, bool timed) {
   TailRunReport rep;
   rep.device = probe_device();
+  const auto contract = NumericalContract::bf16_default("tanh_backward");
   const auto cases = tail_tanh_cases();
-  std::vector<BF16> observed;
+  std::vector<BF16> oracles;
+  oracles.reserve(cases.size());
+  for (const auto& [x, g] : cases)
+    oracles.push_back(contract_reference(BackwardKind::Tanh, contract, x, g));
+  std::vector<BF16> observed, baseline;
   observed.reserve(cases.size());
+  baseline.reserve(cases.size());
 
   if (prefer == DeviceMode::TtMetal) {
 #if defined(BW_SYN_WITH_TTMETAL)
@@ -215,41 +221,73 @@ TailRunReport run_tail_tanh(DeviceMode prefer) {
     require_device_pin(rep.device);
     TtDeviceSession session(tt_probe().device_id);
     constexpr std::size_t batch_size = 128;
-    for (std::size_t base = 0; base < cases.size(); base += batch_size) {
-      const auto end = std::min(base + batch_size, cases.size());
+    auto run_all = [&](TtKernelKind kind, std::vector<BF16>& out) {
+      for (std::size_t base = 0; base < cases.size(); base += batch_size) {
+        const auto end = std::min(base + batch_size, cases.size());
+        std::vector<BF16> xs, gs;
+        xs.reserve(end - base);
+        gs.reserve(end - base);
+        for (std::size_t i = base; i < end; ++i) {
+          xs.push_back(cases[i].first);
+          gs.push_back(cases[i].second);
+        }
+        auto batch = session.eval_batch(kind, xs, gs);
+        out.insert(out.end(), batch.begin(), batch.end());
+      }
+    };
+    run_all(TtKernelKind::TanhTailSplit4, observed);
+    run_all(TtKernelKind::BaselineMaterialize, baseline);
+    if (timed) {
       std::vector<BF16> xs, gs;
-      xs.reserve(end - base);
-      gs.reserve(end - base);
-      for (std::size_t i = base; i < end; ++i) {
+      for (std::size_t i = 0; i < cases.size() && xs.size() < kTailTimingTiles; ++i) {
+        if (!oracles[i].is_normal())
+          continue;
         xs.push_back(cases[i].first);
         gs.push_back(cases[i].second);
       }
-      auto batch = session.eval_batch(TtKernelKind::TanhTailSplit4, xs, gs);
-      observed.insert(observed.end(), batch.begin(), batch.end());
+      if (xs.size() < kTailTimingTiles)
+        throw std::runtime_error("tail timing needs more normal-output cases");
+      rep.timing_tiles = xs.size();
+      rep.device_warmup_runs = kDeviceWarmupRuns;
+      rep.device_measured_runs = kDeviceMeasuredRuns;
+      for (int i = 0; i < rep.device_warmup_runs + rep.device_measured_runs; ++i) {
+        session.eval_batch(TtKernelKind::TanhTailSplit4, xs, gs);
+        session.eval_batch(TtKernelKind::BaselineMaterialize, xs, gs);
+      }
     }
 #else
+    (void)timed;
     throw std::runtime_error("--device requires -DBW_SYN_WITH_TTMETAL=ON");
 #endif
   } else {
-    const auto contract = NumericalContract::bf16_default("tanh_backward");
-    for (const auto& [x, g] : cases)
+    if (timed)
+      throw std::runtime_error("tail timing requires --device");
+    for (const auto& [x, g] : cases) {
       observed.push_back(tanh_bw::tail_split4_host(x, g, contract));
+      baseline.push_back(tanh_bw::baseline_materialize(x, g, contract));
+    }
   }
 
-  const auto contract = NumericalContract::bf16_default("tanh_backward");
   rep.all_normal_outputs_pass = true;
   for (std::size_t i = 0; i < cases.size(); ++i) {
     const auto [x, g] = cases[i];
-    const BF16 oracle = contract_reference(BackwardKind::Tanh, contract, x, g);
+    const BF16 oracle = oracles[i];
     const bool in_scope = oracle.is_normal();
-    const bool pass = in_scope && check_sample(contract, x, g, observed[i], oracle).verdict ==
-                                      ContractVerdict::Pass;
+    auto passes = [&](BF16 got) {
+      return in_scope &&
+             check_sample(contract, x, g, got, oracle).verdict == ContractVerdict::Pass;
+    };
+    const bool pass = passes(observed[i]);
+    const bool baseline_pass = passes(baseline[i]);
     if (in_scope) {
       ++rep.normal_outputs;
       if (!pass)
         rep.all_normal_outputs_pass = false;
+      if (baseline_pass)
+        ++rep.baseline_normal_passes;
     }
-    rep.cases.push_back(TailCaseResult{x, g, oracle, observed[i], in_scope, pass});
+    rep.cases.push_back(
+        TailCaseResult{x, g, oracle, observed[i], baseline[i], in_scope, pass, baseline_pass});
   }
   if (rep.normal_outputs == 0)
     throw std::runtime_error("tail sweep has no normal-output cases");
