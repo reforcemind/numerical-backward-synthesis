@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
   bool tail_sweep = false;
   bool format_probe = false;
   bool timed = false;
-  int degree = 3;
+  int degree = 2;
   std::string out;
   for (int i = 1; i < argc; ++i) {
     std::string a = argv[i];
@@ -31,11 +31,11 @@ int main(int argc, char** argv) {
       timed = true;
     else if (a == "--tail-degree" && i + 1 < argc) {
       const std::string value = argv[++i];
-      if (value != "3" && value != "4") {
-        std::cerr << "--tail-degree must be 3 or 4\n";
+      if (value != "2" && value != "3" && value != "4") {
+        std::cerr << "--tail-degree must be 2, 3 or 4\n";
         return 2;
       }
-      degree = value == "3" ? 3 : 4;
+      degree = std::stoi(value);
     } else if (a == "--csv" && i + 1 < argc)
       out = argv[++i];
     else {
@@ -110,11 +110,14 @@ int main(int argc, char** argv) {
           (c.normal_output ? (c.split4_pass ? "1" : "0") : "") + "," +
           std::to_string(rep.polynomial_degree) + "," +
           (c.vendor_fused ? hex16(c.vendor_fused->bits) : "") + "," +
-          (c.vendor_fused_pass ? (*c.vendor_fused_pass ? "1" : "0") : ""));
+          (c.vendor_fused_pass ? (*c.vendor_fused_pass ? "1" : "0") : "") + "," +
+          hex16(c.cubic.bits) + "," + (c.normal_output ? (c.cubic_pass ? "1" : "0") : "") + "," +
+          (degree == 2 ? "exp2_quadratic_normal_saturate" : "exp_polynomial_wh4_boundary"));
     if (!write_csv(out,
                    "label,arch,tt_metal_commit,x_bits,g_bits,oracle_bits,observed_bits,scope,pass,"
                    "baseline_bits,baseline_pass,timed_input,vendor_bits,vendor_pass,"
-                   "split4_bits,split4_pass,polynomial_degree,vendor_fused_bits,vendor_fused_pass",
+                   "split4_bits,split4_pass,polynomial_degree,vendor_fused_bits,vendor_fused_pass,"
+                   "cubic_bits,cubic_pass,recipe",
                    rows))
       return 1;
     std::cout << "fused tail degree " << degree << ": " << rep.normal_outputs
@@ -122,6 +125,7 @@ int main(int argc, char** argv) {
               << "; all pass=" << rep.all_normal_outputs_pass << "; materialized baseline passes "
               << rep.baseline_normal_passes << "\n";
     std::cout << "split4 passes " << rep.split4_normal_passes << "\n";
+    std::cout << "wh4 cubic passes " << rep.cubic_normal_passes << "\n";
     if (rep.vendor_normal_passes)
       std::cout << "vendor derivative-times-gradient passes " << *rep.vendor_normal_passes << "\n";
     if (rep.vendor_fused_normal_passes)

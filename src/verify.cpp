@@ -138,10 +138,14 @@ VerifyReport verify_kernel(const KernelFn& kernel, const VerifyConfig& cfg) {
       break;
     case ContractVerdict::FailFalseZero:
       ++c.false_zeros;
-      c.worst_x = x;
-      c.worst_g = g;
-      c.worst_actual = actual;
-      c.worst_expected = expected;
+      c.sum_ulp += chk.ulp;
+      if (chk.ulp > c.max_ulp) {
+        c.max_ulp = chk.ulp;
+        c.worst_x = x;
+        c.worst_g = g;
+        c.worst_actual = actual;
+        c.worst_expected = expected;
+      }
       break;
     case ContractVerdict::FailFalseInf:
       ++c.false_infs;

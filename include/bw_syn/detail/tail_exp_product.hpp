@@ -8,6 +8,31 @@ namespace bw_syn::detail {
 #define BW_SYN_TAIL_INLINE inline
 #endif
 
+struct TailQuadratic {
+  float c0;
+  float c1;
+  float c2;
+};
+
+// Coefficients are fitted to final-product intervals, then independently checked.
+template <class Ops, bool Saturate = true, int Rate = 2, int Scale = 2>
+BW_SYN_TAIL_INLINE typename Ops::Float
+tail_exp2_product(typename Ops::Float x, typename Ops::Float g, const TailQuadratic& coefficients) {
+  using F = typename Ops::Float;
+  using I = typename Ops::Int;
+  const F z = Ops::mul(Ops::mul(Ops::abs(x), F(-Rate)), F(1.4426950408889634f));
+  I k_int;
+  const F k = Ops::round_int(z, k_int);
+  const F r = z - k;
+  const F p = Ops::mad(Ops::mad(F(coefficients.c2), r, F(coefficients.c1)), r, F(coefficients.c0));
+  const F product = Ops::round_bf16(Ops::mul(Ops::set_exponent(g, 127), p));
+  const I exponent = Ops::exponent(product) + Ops::exponent(g) + k_int + (Scale - 127);
+  if constexpr (Saturate)
+    return Ops::reconstruct_normal(product, exponent);
+  else
+    return Ops::reconstruct(product, exponent);
+}
+
 // Approximate g * 2^Scale * exp(-Rate * abs(x)). Callers supply a bounded tail
 // domain and normal finite g. Ops fixes arithmetic and reconstruction semantics.
 template <class Ops, int Degree, int Rate = 2, int Scale = 2>

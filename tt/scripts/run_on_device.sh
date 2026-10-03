@@ -19,9 +19,9 @@ elif [[ "${1:-}" == "--critical" ]]; then
   EXPLORE=0
   TAIL_TIMING=0
 fi
-TAIL_DEGREE="${BW_SYN_TAIL_DEGREE:-3}"
-if [[ "$TAIL_DEGREE" != "3" && "$TAIL_DEGREE" != "4" ]]; then
-  echo "ERROR: BW_SYN_TAIL_DEGREE must be 3 or 4" >&2
+TAIL_DEGREE="${BW_SYN_TAIL_DEGREE:-2}"
+if [[ "$TAIL_DEGREE" != "2" && "$TAIL_DEGREE" != "3" && "$TAIL_DEGREE" != "4" ]]; then
+  echo "ERROR: BW_SYN_TAIL_DEGREE must be 2, 3 or 4" >&2
   exit 2
 fi
 
@@ -95,7 +95,8 @@ fi
   sha256sum tt/kernels/common/tanh_factor.h tt/kernels/compute/tanh_bw_scale_separated.cpp \
     tt/kernels/compute/tanh_bw_baseline.cpp tt/kernels/compute/tanh_bw_tail_split4.cpp \
     tt/kernels/compute/tanh_bw_vendor_derivative.cpp tt/kernels/compute/tanh_bw_tail_fused.cpp \
-    include/bw_syn/detail/tail_exp_product.hpp tt/kernels/compute/format_probe.cpp \
+    include/bw_syn/detail/tail_exp_product.hpp include/bw_syn/detail/tail_exp2_coefficients.hpp \
+    tt/kernels/compute/format_probe.cpp \
     tt/kernels/dataflow/reader_dual_tiles.cpp tt/kernels/dataflow/writer_unary.cpp \
     tt/host/tt_metal_backend.cpp src/backends/tt_harness.cpp
 } > "$PROVENANCE"
@@ -126,9 +127,16 @@ if [[ "$TAIL_TIMING" == "1" ]]; then
   if [[ "$TAIL_STATUS" == "0" ]]; then
     CASE_COUNT="$(($(wc -l < "$TAIL_CSV") - 1))"
     PREFIX_LAUNCHES="$(((CASE_COUNT + 127) / 128))"
+    ZONES=()
+    if [[ "$TAIL_DEGREE" == "2" ]]; then
+      ZONES+=(BW_SYN_TANH_TAIL_EXP2)
+    elif [[ "$TAIL_DEGREE" == "4" ]]; then
+      ZONES+=(BW_SYN_TANH_TAIL_QUARTIC)
+    fi
+    ZONES+=(BW_SYN_TANH_TAIL_FUSED BW_SYN_TANH_TAIL_SPLIT4 BW_SYN_TANH_MATERIALIZED \
+      BW_SYN_TANH_VENDOR_DERIVATIVE BW_SYN_TANH_VENDOR_FUSED)
     "$BUILD/summarize_tt_profiler" "$RAW_PROFILE" "$RUN_DIR/cycles.csv" "$ARCH" \
-      "$HEAD" 128 "$PREFIX_LAUNCHES" BW_SYN_TANH_TAIL_FUSED BW_SYN_TANH_TAIL_SPLIT4 BW_SYN_TANH_MATERIALIZED \
-      BW_SYN_TANH_VENDOR_DERIVATIVE BW_SYN_TANH_VENDOR_FUSED || exit 4
+      "$HEAD" 128 "$PREFIX_LAUNCHES" "${ZONES[@]}" || exit 4
     cat "$RUN_DIR/cycles.csv"
   else
     echo "Tail candidate failed the normal-output contract; timing summary withheld" >&2

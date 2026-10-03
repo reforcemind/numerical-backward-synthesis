@@ -1,0 +1,16 @@
+label=host_model
+compiler=GCC 13.2.0 MinGW-W64 ucrt-posix-seh r8
+platform=Windows x86_64
+build=Release -O3 -std=c++20
+command=build/synthesize_tail_product.exe results/host/tail_synthesis
+source_base=d8d09c08de4818f65c83254c9ac3f596bbdaa5ea
+utc_recorded=2026-10-03T13:47:55Z
+source_hash_format=SHA256 UTF8 text normalized to LF
+b4fa1cfdbd2d380042d0c73f544a3155c526f2a755b87845cb6caf7d68db9a75  tools/synthesize_tail_product.cpp
+af768845bf74b1bf17bd372d9862200a10e8a65345da125de01f5ead877da466  include/bw_syn/detail/tail_exp_product.hpp
+c9d1e2e1c26637e8dddb5fa232c8f04c855327f16d3dbaf2a1993521489cefae  include/bw_syn/detail/tail_exp_host.hpp
+60f02dac52fbf4038e983e1cfe0eca7e0d798a4967565a26c027543bca61a42b  include/bw_syn/detail/tail_exp2_coefficients.hpp
+1b87dad15b34f289644848de6a1cec3da54df102233cffa3dcf82ff7a7d42961  src/verify.cpp
+c9e098b203cba41ac9512ec7a5df589cca7347a9594032930f93f1cadd3835a7  src/oracle.cpp
+929a4f95c784776aab82fa7d8400fc40987194161099fc27c7cac47174996656  src/bf16.cpp
+1d881520b4e1e3d2e9a075778d40749e2c8184ad03fa54b834998d9fa5f0944b  src/contract.cpp

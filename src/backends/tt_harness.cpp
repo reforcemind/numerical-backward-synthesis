@@ -210,8 +210,8 @@ std::vector<std::pair<BF16, BF16>> tail_tanh_cases() {
 }
 
 TailRunReport run_tail_tanh(DeviceMode prefer, bool timed, int degree) {
-  if (degree != 3 && degree != 4)
-    throw std::invalid_argument("tail polynomial degree must be 3 or 4");
+  if (degree != 2 && degree != 3 && degree != 4)
+    throw std::invalid_argument("tail polynomial degree must be 2, 3 or 4");
   TailRunReport rep;
   rep.polynomial_degree = degree;
   rep.device = probe_device();
@@ -221,11 +221,14 @@ TailRunReport run_tail_tanh(DeviceMode prefer, bool timed, int degree) {
   oracles.reserve(cases.size());
   for (const auto& [x, g] : cases)
     oracles.push_back(contract_reference(BackwardKind::Tanh, contract, x, g));
-  std::vector<BF16> observed, baseline, vendor, split4, vendor_fused;
+  std::vector<BF16> observed, baseline, vendor, split4, vendor_fused, cubic;
   observed.reserve(cases.size());
   baseline.reserve(cases.size());
 #if defined(BW_SYN_WITH_TTMETAL)
   std::unique_ptr<TtDeviceSession> session;
+  const auto selected_kind =
+      degree == 2 ? TtKernelKind::TanhTailFused2
+                  : (degree == 3 ? TtKernelKind::TanhTailFused3 : TtKernelKind::TanhTailFused4);
 #endif
 
   if (prefer == DeviceMode::TtMetal) {
@@ -249,7 +252,11 @@ TailRunReport run_tail_tanh(DeviceMode prefer, bool timed, int degree) {
         out.insert(out.end(), batch.begin(), batch.end());
       }
     };
-    run_all(degree == 3 ? TtKernelKind::TanhTailFused3 : TtKernelKind::TanhTailFused4, observed);
+    run_all(selected_kind, observed);
+    if (degree != 3)
+      run_all(TtKernelKind::TanhTailFused3, cubic);
+    else
+      cubic = observed;
     run_all(TtKernelKind::TanhTailSplit4, split4);
     run_all(TtKernelKind::BaselineMaterialize, baseline);
     run_all(TtKernelKind::VendorTanhDerivative, vendor);
@@ -265,6 +272,7 @@ TailRunReport run_tail_tanh(DeviceMode prefer, bool timed, int degree) {
       throw std::runtime_error("tail timing requires --device");
     for (const auto& [x, g] : cases) {
       observed.push_back(tanh_bw::tail_fused_host(x, g, contract, degree));
+      cubic.push_back(tanh_bw::tail_fused_host(x, g, contract, 3));
       split4.push_back(tanh_bw::tail_split4_host(x, g, contract));
       baseline.push_back(tanh_bw::baseline_materialize(x, g, contract));
     }
@@ -281,6 +289,8 @@ TailRunReport run_tail_tanh(DeviceMode prefer, bool timed, int degree) {
     const bool pass = passes(observed[i]);
     const bool baseline_pass = passes(baseline[i]);
     const bool split4_pass = passes(split4[i]);
+    const BF16 cubic_result = cubic[i];
+    const bool cubic_pass = passes(cubic_result);
     std::optional<BF16> vendor_result;
     std::optional<bool> vendor_pass;
     std::optional<BF16> vendor_fused_result;
@@ -299,6 +309,8 @@ TailRunReport run_tail_tanh(DeviceMode prefer, bool timed, int degree) {
         ++rep.baseline_normal_passes;
       if (split4_pass)
         ++rep.split4_normal_passes;
+      if (cubic_pass)
+        ++rep.cubic_normal_passes;
       if (vendor_pass.value_or(false))
         ++*rep.vendor_normal_passes;
       if (vendor_fused_pass.value_or(false))
@@ -318,7 +330,9 @@ TailRunReport run_tail_tanh(DeviceMode prefer, bool timed, int degree) {
                                        split4[i],
                                        split4_pass,
                                        vendor_fused_result,
-                                       vendor_fused_pass});
+                                       vendor_fused_pass,
+                                       cubic_result,
+                                       cubic_pass});
   }
   if (rep.normal_outputs == 0)
     throw std::runtime_error("tail sweep has no normal-output cases");
@@ -345,12 +359,13 @@ TailRunReport run_tail_tanh(DeviceMode prefer, bool timed, int degree) {
     rep.device_warmup_runs = kDeviceWarmupRuns;
     rep.device_measured_runs = kDeviceMeasuredRuns;
     for (int i = 0; i < rep.device_warmup_runs + rep.device_measured_runs; ++i) {
-      const auto got = session->eval_batch(
-          degree == 3 ? TtKernelKind::TanhTailFused3 : TtKernelKind::TanhTailFused4, xs, gs);
+      const auto got = session->eval_batch(selected_kind, xs, gs);
       if (!std::equal(got.begin(), got.end(), expected.begin(), expected.end(), [](BF16 a, BF16 b) {
             return a.bits == b.bits;
           }))
         throw std::runtime_error("fused tail output changed during timing; reject this run");
+      if (degree != 3)
+        session->eval_batch(TtKernelKind::TanhTailFused3, xs, gs);
       session->eval_batch(TtKernelKind::TanhTailSplit4, xs, gs);
       session->eval_batch(TtKernelKind::BaselineMaterialize, xs, gs);
       session->eval_batch(TtKernelKind::VendorTanhDerivative, xs, gs);

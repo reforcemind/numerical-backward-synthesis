@@ -38,6 +38,11 @@ struct HostTailOps {
       return 0.0f;
     return set_exponent(x, e);
   }
+  static Float reconstruct_normal(Float x, Int e) {
+    if (e <= 0)
+      return std::bit_cast<float>((std::bit_cast<std::uint32_t>(x) & 0x80000000u) | 0x00800000u);
+    return reconstruct(x, e);
+  }
 };
 
 } // namespace bw_syn::detail

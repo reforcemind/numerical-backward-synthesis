@@ -1,3 +1,4 @@
+#include "../../../include/bw_syn/detail/tail_exp2_coefficients.hpp"
 #include "../../../include/bw_syn/detail/tail_exp_product.hpp"
 #include "../common/cb_indices.h"
 #include "api/compute/common.h"
@@ -25,6 +26,17 @@ struct TailOps {
   }
   static sfpi_inline Int exponent(Float x) { return sfpi::exexp(x, sfpi::ExponentMode::Biased); }
   static sfpi_inline Float set_exponent(Float x, int e) { return sfpi::setexp(x, e); }
+  // This specialization is contracted only for oracle-normal outputs. Values
+  // below the normal range saturate to signed min-normal, including cases
+  // outside that contract; they do not implement gradual underflow.
+  static sfpi_inline Float reconstruct_normal(Float x, Int e) {
+    Float result = sfpi::setexp(x, e);
+    v_if(e <= 0) {
+      result = sfpi::setexp(sfpi::setman(x, 0), 1);
+    }
+    v_endif;
+    return result;
+  }
   static sfpi_inline Float reconstruct(Float x, Int e) {
     Float result = 0.0f;
     v_if(e > 0) {
@@ -51,6 +63,9 @@ template <int Degree> inline void tail_product_face(uint32_t ix, uint32_t ig, ui
       const sfpi::vFloat rounded =
           sfpi::convert<sfpi::vFloat16b>(product, sfpi::RoundMode::Nearest);
       sfpi::dst_reg[iy * 32] = rounded;
+    } else if constexpr (Degree == 2) {
+      sfpi::dst_reg[iy * 32] =
+          bw_syn::detail::tail_exp2_product<TailOps>(x, g, bw_syn::detail::kTailExp2Quadratic);
     } else {
       sfpi::dst_reg[iy * 32] = bw_syn::detail::tail_exp_product<TailOps, Degree>(x, g);
     }
@@ -78,7 +93,8 @@ template <int Degree> inline void run_tiles(uint32_t n_tiles) {
     tile_regs_acquire();
     copy_init(cb_x);
     copy_tile(cb_x, 0, 0);
-    copy_init(cb_g);
+    // X and G have the same BF16 format and tile shape, so the copy setup
+    // applies to both CBs (as in the pinned sfpu_eltwise_chain example).
     copy_tile(cb_g, 0, 1);
     ckernel::mul_binary_tile_init();
     ckernel::tail_product_tile<Degree>();
@@ -100,6 +116,12 @@ void kernel_main() {
   if constexpr (degree == 0) {
     DeviceZoneScopedN("BW_SYN_TANH_VENDOR_FUSED");
     run_tiles<0>(n_tiles);
+  } else if constexpr (degree == 2) {
+    DeviceZoneScopedN("BW_SYN_TANH_TAIL_EXP2");
+    run_tiles<2>(n_tiles);
+  } else if constexpr (degree == 4) {
+    DeviceZoneScopedN("BW_SYN_TANH_TAIL_QUARTIC");
+    run_tiles<4>(n_tiles);
   } else {
     DeviceZoneScopedN("BW_SYN_TANH_TAIL_FUSED");
     run_tiles<degree>(n_tiles);

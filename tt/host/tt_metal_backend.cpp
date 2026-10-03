@@ -62,6 +62,7 @@ std::string compute_kernel_path(TtKernelKind kind) {
     return kernel_file("tt/kernels/compute/tanh_bw_baseline.cpp");
   case TtKernelKind::TanhTailSplit4:
     return kernel_file("tt/kernels/compute/tanh_bw_tail_split4.cpp");
+  case TtKernelKind::TanhTailFused2:
   case TtKernelKind::TanhTailFused3:
   case TtKernelKind::TanhTailFused4:
   case TtKernelKind::VendorTailFused:
@@ -165,6 +166,8 @@ std::vector<BF16> run_on_device(MetalDevice* device,
       program, writer, core, {static_cast<std::uint32_t>(y_buf->address()), n_tiles});
   if (kind != TtKernelKind::ProbeRawCopy) {
     std::vector<std::uint32_t> compute_args;
+    if (kind == TtKernelKind::TanhTailFused2)
+      compute_args.push_back(2);
     if (kind == TtKernelKind::TanhTailFused3 || kind == TtKernelKind::TanhTailFused4)
       compute_args.push_back(kind == TtKernelKind::TanhTailFused3 ? 3 : 4);
     if (kind == TtKernelKind::VendorTailFused)

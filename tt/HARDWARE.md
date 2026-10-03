@@ -13,24 +13,24 @@ Those measurements are diagnostic and excluded from paper performance claims.
 
 ## Next Wormhole exploration
 
-After pulling branch `wh4`, use the same `TT_METAL_HOME` and
+After pulling branch `wh5`, use the same `TT_METAL_HOME` and
 `BW_SYN_ARCH=wormhole` environment as below, with `torch` and `ttnn` optional
 for this mode:
 
 ```bash
 git fetch origin
-git switch wh4
+git switch wh5
 git pull --ff-only
 ./tt/scripts/run_on_device.sh
 ```
 
-The default now runs the fused polynomial/exponent candidate, not the old ten-case
-critical harness. It checks 6,774 constant tiles: every positive BF16 `x` encoding
+The default runs the generated base-2 quadratic with minimum-normal saturation.
+It checks 6,774 constant tiles: every positive BF16 `x` encoding
 from 4 through 88.5, six fixed gradients, six signed gradients around the rounded
 normal-output boundary, and selected negative `x` values. Only normal reference
 outputs are in scope. The host reference classifies 4,636 cases as in scope.
 
-Five kernels share the same inputs and dataflow: fused candidate, previous split4,
+Six kernels share the same inputs and dataflow: generated quadratic, wh4 cubic, previous split4,
 materialized helper, vendor tanh derivative times gradient, and a fused vendor
 tail times gradient. The last comparator uses the same SFPU traversal and packing
 as the candidate. Every comparator's correctness is recorded; a faster comparator
@@ -43,14 +43,14 @@ mixed-lane tensors and end-to-end workloads remain future validation. Zones
 include buffer waits and packing; these are single-core development diagnostics.
 
 All evidence, including build failures, is saved in an unignored
-`results/runs/wormhole_<source>_<UTC>_d3/` directory: provenance, build log,
+`results/runs/wormhole_<source>_<UTC>_d2/` directory: provenance, build log,
 correctness CSV/log, raw profiler, cycle summary, and format probes. Commit the
 whole packet after the run:
 
 ```bash
 git add results/runs
 git commit -m "Wormhole fused tail run"
-git push origin wh4
+git push origin wh5
 ```
 
 The script requires committed tracked source changes. A failing numerical sweep
@@ -62,6 +62,7 @@ Optional ablations (each writes a separate evidence directory):
 
 ```bash
 BW_SYN_TAIL_DEGREE=4 ./tt/scripts/run_on_device.sh  # quartic accuracy variant
+BW_SYN_TAIL_DEGREE=3 ./tt/scripts/run_on_device.sh  # wh4 cubic as primary candidate
 BW_SYN_CB_TILES=1 ./tt/scripts/run_on_device.sh    # buffer-depth ablation
 ./tt/scripts/run_on_device.sh --explore           # correctness only
 ./tt/scripts/run_on_device.sh --critical          # old ten-case path + TTNN
@@ -71,6 +72,25 @@ The tail path requires finite normal `g` and `4 <= |x| <= 88.5`; its contract co
 normal BF16 reference outputs only. It has no full-domain dispatch or special-input
 guard. The 50% reduction in cycles is an unmeasured target; compare against both
 split4 and the fused vendor baseline before attributing a gain to the algorithm.
+
+The cubic and quadratic now share the same fused copy path, including removal of
+the redundant second copy initialization. Compare them within one packet to
+separate algorithm changes from that pipeline change. Degree 2 uses base-2 range
+reduction and generated coefficients; degrees 3/4 retain the wh4 exponential
+residual. The CSV records the recipe explicitly. Sigmoid currently has exhaustive
+host validation of the generated recipe, but no device implementation.
+
+To regenerate the selected coefficients on a host:
+
+```bash
+./build/synthesize_tail_product build/tail-search
+diff -u include/bw_syn/detail/tail_exp2_coefficients.hpp build/tail-search/tail_exp2_coefficients.hpp
+```
+
+Only a passing full sweep emits the header. `--quick` runs a sampled activation
+set and emits diagnostics without a header. Full results include both gradient
+signs and both activation signs; the manifest records rejected reconstruction
+policies, coefficients, fitting time, and verification time.
 
 ## Roles
 

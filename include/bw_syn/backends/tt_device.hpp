@@ -12,6 +12,7 @@ enum class TtKernelKind {
   Factored,
   BaselineMaterialize,
   TanhTailSplit4,
+  TanhTailFused2,
   TanhTailFused3,
   TanhTailFused4,
   VendorTailFused,

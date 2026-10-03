@@ -221,3 +221,79 @@ and verify boundary cases separately. The proof must cover signs, rounding,
 normal boundaries, and target arithmetic, followed by generated schedules for
 multiple functions and hardware comparison against equally accurate baselines.
 That rule is not proved or implemented here; `claimed_sound` remains false.
+
+## Generated quadratic with contract-specific reconstruction (wh5)
+
+`synthesize_tail_product` now searches a bounded program family: one quadratic
+shared by tanh and sigmoid, with either wh4 boundary repair or signed
+minimum-normal saturation. It starts from the second-order Taylor coefficients
+of `2^r`, generates final-product constraints, and uses cyclic projections onto
+those linear intervals. It does not find a global optimum or prove that a
+rejected polynomial family is infeasible.
+
+### Product constraints and acceptance
+
+For every activation encoding, the generator visits all 128 normal gradient
+significands at biased exponent 254. If even this gradient produces a subnormal
+reference, that pair cannot enter the normal-output contract at lower exponents.
+For a normal reference with positive BF16 code `b`, the allowed output codes are
+`b-1`, `b`, and `b+1`. The midpoints between `b-2`/`b-1` and `b+1`/`b+2` bound the
+corresponding real-valued product interval. Endpoints are moved inward by a
+relative margin of `1e-6` before fitting.
+
+Writing the normalized gradient as `m`, and using the FP32 range reduction
+`z=(-Rate*abs(x))*log2(e)`, `k=round(z)`, `r=z-k`, the candidate product at this
+gradient exponent is `m*p(r)*2^(k+Scale+127)`. Inverting that expression maps each
+allowed product interval to a linear constraint on the polynomial coefficients.
+The generator intersects the intervals over all significands at each activation.
+There are 1,123 resulting activation/function constraints across tanh and sigmoid.
+
+These constraints guide search; they do not certify FP32 evaluation or establish
+a sound exponent reduction. Acceptance separately enumerates every BF16 gradient
+encoding and both signs of every activation encoding in the declared tail ranges.
+It checks all normal reference outputs against the existing scaled-f64 oracle.
+Only a passing full sweep emits `tail_exp2_coefficients.hpp`; sampled runs never
+emit a selected header. `claimed_sound=false` remains unchanged.
+
+The generated shared coefficients, after 12 projection sweeps, are:
+
+```text
+p(r) = (0x1.ebaceep-3 * r + 0x1.657c1cp-1) * r + 0x1.ff9dap-1
+```
+
+The shared arithmetic body uses two polynomial FMAs and one residual subtraction.
+The wh4 cubic uses three polynomial FMAs and two FMAs for residual reduction.
+These are source-operation counts, not measured instructions or cycles.
+
+### Why reconstruction is part of the search
+
+For the generated quadratic, retaining wh4's boundary repair causes false zeros.
+The alternative reconstructs a normal result when its composed exponent is
+positive and otherwise returns signed BF16 minimum normal. For a positive normal
+reference `R >= N` and a nonnegative approximation `Y < N`, clamping to `N` cannot
+increase BF16 ULP distance: `round(Y) <= N <= R`, and positive BF16 codes are
+monotonic. The negative case follows by magnitudes if the sign is preserved.
+This local observation does not prove the polynomial's approximation error.
+
+| Host variant | Tanh checks | Sigmoid checks | Failed tanh / sigmoid |
+|--------------|------------:|---------------:|----------------------:|
+| Generated quadratic + wh4 repair | 51,072,728 | 50,497,896 | 36 / 36 false zeros |
+| Same quadratic + normal saturation | 51,072,728 | 50,497,896 | 0 / 0; maximum 1 ULP |
+
+The selected policy deliberately changes outputs outside the normal-reference
+scope. It does not implement gradual underflow or a full-domain activation
+backward operation. The output-domain test remains a verification restriction,
+not a runtime dispatch predicate. Both functions share the generated polynomial
+and arithmetic template; only tanh has a device path at present.
+
+This ablation establishes a concrete interaction between approximation and
+reconstruction in this bounded host experiment. Polynomial fitting, range
+reduction, final-rounding constraints, and saturation are established techniques.
+A new general synthesis or verification contribution still needs a precise
+comparison with RLibm, MegaLibm, and Chassis, and target-level evidence. See
+`prior_art_matrix.md`. The device experiment compares the generated quadratic
+with the wh4 cubic in the same fused kernel, plus the existing baselines.
+
+The full manifest and verification CSV are in `results/host/tail_synthesis`.
+The verifier now includes false-zero distances when reporting maximum ULP;
+previous reports could show `max_ulp=1` alongside much larger false-zero errors.

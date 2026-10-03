@@ -1,0 +1,5 @@
+label,function,reconstruction,domain,checked,failed,false_zeros,max_ulp,worst_x_bits,worst_g_bits,worst_actual_bits,worst_expected_bits
+host_model,tanh_backward,wh4_boundary,all_x_all_g_both_signs,51072728,36,36,128,0x40c3,0x083f,0x0000,0x0080
+host_model,sigmoid_backward,wh4_boundary,all_x_all_g_both_signs,50497896,36,36,128,0x4143,0x093f,0x0000,0x0080
+host_model,tanh_backward,normal_saturate,all_x_all_g_both_signs,51072728,0,0,1,0x4080,0x053d,0x0081,0x0082
+host_model,sigmoid_backward,normal_saturate,all_x_all_g_both_signs,50497896,0,0,1,0x4100,0x063d,0x0081,0x0082

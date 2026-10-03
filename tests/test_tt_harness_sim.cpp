@@ -1,5 +1,8 @@
 #include "bw_syn/backends/tt_harness.hpp"
+#include "bw_syn/detail/tail_exp2_coefficients.hpp"
+#include "bw_syn/detail/tail_exp_host.hpp"
 #include "bw_syn/functions/tanh_bw.hpp"
+#include "bw_syn/verify.hpp"
 #include <cassert>
 #include <cmath>
 #include <cstdint>
@@ -83,13 +86,32 @@ int main() {
         const auto gi = bw_syn::BF16::from_bits(gb | sg);
         const auto ref = bw_syn::contract_reference(bw_syn::BackwardKind::Tanh, contract, xi, gi);
         assert(ref.is_normal());
-        for (int degree : {3, 4}) {
+        for (int degree : {2, 3, 4}) {
           const auto got = bw_syn::tanh_bw::tail_fused_host(xi, gi, contract, degree);
           assert(bw_syn::check_sample(contract, xi, gi, got, ref).verdict ==
                  bw_syn::ContractVerdict::Pass);
         }
       }
   }
+  const auto boundary_x = bw_syn::BF16::from_bits(0xc29d);
+  const auto boundary_g = bw_syn::BF16::from_bits(0xf0b5);
+  const auto boundary_ref =
+      bw_syn::contract_reference(bw_syn::BackwardKind::Tanh, contract, boundary_x, boundary_g);
+  assert(boundary_ref.bits == 0x8080);
+  const auto uncorrected = bw_syn::detail::tail_exp2_product<bw_syn::detail::HostTailOps, false>(
+      boundary_x.to_f32(), boundary_g.to_f32(), bw_syn::detail::kTailExp2Quadratic);
+  assert(uncorrected == 0.0f);
+  assert(bw_syn::tanh_bw::tail_fused_host(boundary_x, boundary_g, contract).bits ==
+         boundary_ref.bits);
+  bw_syn::VerifyConfig zero_cfg;
+  zero_cfg.contract = contract;
+  zero_cfg.exhaustive_g = true;
+  zero_cfg.fixed_x_values = {boundary_x};
+  zero_cfg.contract.finite_inputs_only = true;
+  zero_cfg.contract.normal_reference_output_only = true;
+  const auto zero_rep = bw_syn::verify_kernel(
+      [](bw_syn::BF16, bw_syn::BF16) { return bw_syn::BF16::zero(); }, zero_cfg);
+  assert(zero_rep.counters.false_zeros > 0 && zero_rep.counters.max_ulp >= 128);
   const auto format = run_format_probe(DeviceMode::HostSim);
   assert(format.rows.size() == 8);
   for (const auto& row : format.rows)
