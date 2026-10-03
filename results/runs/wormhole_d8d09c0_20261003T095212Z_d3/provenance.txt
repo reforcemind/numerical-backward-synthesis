@@ -2,9 +2,9 @@ bw_syn_commit=d8d09c08de4818f65c83254c9ac3f596bbdaa5ea
 tt_metal_commit=f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee
 arch=wormhole
 tail_polynomial_degree=3
-cb_tiles=2
+cb_tiles=1
 device_id=0
-utc_start=2026-10-03T09:52:55Z
+utc_start=2026-10-03T09:52:12Z
 Linux wh-glx6u-02-special-ijankowski-for-reservation-241170 5.15.0-142-generic #152-Ubuntu SMP Mon May 19 10:54:31 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
 3ea4b361521110e774fdce22cd3fa6777f9bd9e12bc11d839ed3522b161234d1  tt/kernels/common/tanh_factor.h
 e968321cc4ab39cf267af4a6e59d5e14885a4e19b94ea13272a97a903c418377  tt/kernels/compute/tanh_bw_scale_separated.cpp
@@ -18,3 +18,4 @@ fbd782cc3b44e78883c61660687342ba92752d4fe036ef13666ba8b073520b6d  tt/kernels/com
 cafdf5e7be19a8b240549ace8f40f2f1cc12fcc1df7ad9c7da63ab0f6b1a7efb  tt/kernels/dataflow/writer_unary.cpp
 f664c5b92481ed350266130a1ffaf1417e4e91ca8634e7225a17b819821a7ec2  tt/host/tt_metal_backend.cpp
 b96b68863575be77f1e13aebafbe701e4c45d60dae9a0f526a657a9bf01ef878  src/backends/tt_harness.cpp
+exit_status=0

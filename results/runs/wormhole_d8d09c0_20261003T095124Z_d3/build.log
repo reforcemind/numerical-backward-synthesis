@@ -1,0 +1,135 @@
+-- Found umd at /localdev/ijankowski/tt-metal-pin/build/lib/cmake/umd
+-- Found TT-Metalium at /localdev/ijankowski/tt-metal-pin/build/lib/cmake/tt-metalium
+-- bw_syn 0.1.0 | tests=ON | ttmetal=ON
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /localdev/ijankowski/bw-syn-build-pin
+[  2%] Building CXX object CMakeFiles/bw_syn.dir/src/synthesize.cpp.o
+[  4%] Building CXX object CMakeFiles/bw_syn.dir/src/functions/tanh_bw.cpp.o
+[  6%] Building CXX object CMakeFiles/bw_syn.dir/src/backends/tt_harness.cpp.o
+[  9%] Building CXX object CMakeFiles/bw_syn.dir/tt/host/tt_metal_backend.cpp.o
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp: In function ‘void bw_syn::{anonymous}::enqueue_or_launch(MetalDevice*, tt::tt_metal::Program&)’:
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:83:31: warning: ‘void tt::tt_metal::detail::LaunchProgram(tt::tt_metal::IDevice*, tt::tt_metal::Program&, bool, bool)’ is deprecated: Use distributed::EnqueueMeshWorkload instead. detail::LaunchProgram will be removed after 2026-09-21. [-Wdeprecated-declarations]
+   83 |   metal::detail::LaunchProgram(device, program);
+      |   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~
+In file included from /home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:17:
+/localdev/ijankowski/tt-metal-pin/build/include/tt-metalium/tt_metal.hpp:192:6: note: declared here
+  192 | void LaunchProgram(
+      |      ^~~~~~~~~~~~~
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp: In function ‘std::vector<bw_syn::BF16> bw_syn::{anonymous}::run_on_device(MetalDevice*, bw_syn::TtKernelKind, const std::vector<bw_syn::BF16>&, const std::vector<bw_syn::BF16>&)’:
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:100:34: warning: ‘using InterleavedBufferConfig = struct tt::tt_metal::BufferConfig’ is deprecated: Use distributed::MeshBuffer instead. This API will be removed after 2026-10-04. [-Wdeprecated-declarations]
+  100 |   metal::InterleavedBufferConfig cfg{
+      |                                  ^~~
+In file included from /localdev/ijankowski/tt-metal-pin/build/include/tt-metalium/host_api.hpp:12,
+                 from /home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:16:
+/localdev/ijankowski/tt-metal-pin/build/include/tt-metalium/buffer.hpp:102:7: note: declared here
+  102 | using InterleavedBufferConfig
+      |       ^~~~~~~~~~~~~~~~~~~~~~~
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:106:35: warning: ‘std::shared_ptr<tt::tt_metal::Buffer> tt::tt_metal::CreateBuffer(const BufferConfig&)’ is deprecated: Use distributed::MeshBuffer instead. This API will be removed after 2026-10-04. [-Wdeprecated-declarations]
+  106 |   auto x_buf = metal::CreateBuffer(cfg);
+      |                ~~~~~~~~~~~~~~~~~~~^~~~~
+/localdev/ijankowski/tt-metal-pin/build/include/tt-metalium/host_api.hpp:353:25: note: declared here
+  353 | std::shared_ptr<Buffer> CreateBuffer(const BufferConfig& config);
+      |                         ^~~~~~~~~~~~
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:107:35: warning: ‘std::shared_ptr<tt::tt_metal::Buffer> tt::tt_metal::CreateBuffer(const BufferConfig&)’ is deprecated: Use distributed::MeshBuffer instead. This API will be removed after 2026-10-04. [-Wdeprecated-declarations]
+  107 |   auto g_buf = metal::CreateBuffer(cfg);
+      |                ~~~~~~~~~~~~~~~~~~~^~~~~
+/localdev/ijankowski/tt-metal-pin/build/include/tt-metalium/host_api.hpp:353:25: note: declared here
+  353 | std::shared_ptr<Buffer> CreateBuffer(const BufferConfig& config);
+      |                         ^~~~~~~~~~~~
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:108:35: warning: ‘std::shared_ptr<tt::tt_metal::Buffer> tt::tt_metal::CreateBuffer(const BufferConfig&)’ is deprecated: Use distributed::MeshBuffer instead. This API will be removed after 2026-10-04. [-Wdeprecated-declarations]
+  108 |   auto y_buf = metal::CreateBuffer(cfg);
+      |                ~~~~~~~~~~~~~~~~~~~^~~~~
+/localdev/ijankowski/tt-metal-pin/build/include/tt-metalium/host_api.hpp:353:25: note: declared here
+  353 | std::shared_ptr<Buffer> CreateBuffer(const BufferConfig& config);
+      |                         ^~~~~~~~~~~~
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:121:31: warning: ‘void tt::tt_metal::detail::WriteToBuffer(const std::shared_ptr<tt::tt_metal::Buffer>&, const std::vector<T>&) [with DType = unsigned int]’ is deprecated: Use distributed::WriteShard or distributed::EnqueueWriteMeshBuffer instead. This API will be removed after 2026-10-30. [-Wdeprecated-declarations]
+  121 |   metal::detail::WriteToBuffer(x_buf, x_words);
+      |   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+/localdev/ijankowski/tt-metal-pin/build/include/tt-metalium/tt_metal.hpp:131:6: note: declared here
+  131 | void WriteToBuffer(const std::shared_ptr<Buffer>& buffer, const std::vector<DType>& host_buffer) {
+      |      ^~~~~~~~~~~~~
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:122:31: warning: ‘void tt::tt_metal::detail::WriteToBuffer(const std::shared_ptr<tt::tt_metal::Buffer>&, const std::vector<T>&) [with DType = unsigned int]’ is deprecated: Use distributed::WriteShard or distributed::EnqueueWriteMeshBuffer instead. This API will be removed after 2026-10-30. [-Wdeprecated-declarations]
+  122 |   metal::detail::WriteToBuffer(g_buf, g_words);
+      |   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+/localdev/ijankowski/tt-metal-pin/build/include/tt-metalium/tt_metal.hpp:131:6: note: declared here
+  131 | void WriteToBuffer(const std::shared_ptr<Buffer>& buffer, const std::vector<DType>& host_buffer) {
+      |      ^~~~~~~~~~~~~
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:148:75: warning: missing initializer for member ‘tt::tt_metal::DataMovementConfig::defines’ [-Wmissing-field-initializers]
+  148 |                                 .compile_args = {BW_SYN_CB_X, BW_SYN_CB_G}});
+      |                                                                           ^
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:148:75: warning: missing initializer for member ‘tt::tt_metal::DataMovementConfig::named_compile_args’ [-Wmissing-field-initializers]
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:148:75: warning: missing initializer for member ‘tt::tt_metal::DataMovementConfig::compiler_include_paths’ [-Wmissing-field-initializers]
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:156:63: warning: narrowing conversion of ‘((kind == bw_syn::TtKernelKind::ProbeRawCopy) ? 0 : 16)’ from ‘int’ to ‘unsigned int’ [-Wnarrowing]
+  156 |           .compile_args = {kind == TtKernelKind::ProbeRawCopy ? BW_SYN_CB_X : BW_SYN_CB_Y}});
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:156:63: warning: narrowing conversion of ‘((kind == bw_syn::TtKernelKind::ProbeRawCopy) ? 0 : 16)’ from ‘int’ to ‘unsigned int’ [-Wnarrowing]
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:156:91: warning: missing initializer for member ‘tt::tt_metal::DataMovementConfig::defines’ [-Wmissing-field-initializers]
+  156 |           .compile_args = {kind == TtKernelKind::ProbeRawCopy ? BW_SYN_CB_X : BW_SYN_CB_Y}});
+      |                                                                                           ^
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:156:91: warning: missing initializer for member ‘tt::tt_metal::DataMovementConfig::named_compile_args’ [-Wmissing-field-initializers]
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:156:91: warning: missing initializer for member ‘tt::tt_metal::DataMovementConfig::compiler_include_paths’ [-Wmissing-field-initializers]
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:181:78: warning: missing initializer for member ‘tt::tt_metal::ComputeConfig::unpack_to_dest_mode’ [-Wmissing-field-initializers]
+  181 |                                                  .compile_args = compute_args});
+      |                                                                              ^
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:181:78: warning: missing initializer for member ‘tt::tt_metal::ComputeConfig::defines’ [-Wmissing-field-initializers]
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:181:78: warning: missing initializer for member ‘tt::tt_metal::ComputeConfig::named_compile_args’ [-Wmissing-field-initializers]
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:181:78: warning: missing initializer for member ‘tt::tt_metal::ComputeConfig::compiler_include_paths’ [-Wmissing-field-initializers]
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:188:32: warning: ‘void tt::tt_metal::detail::ReadFromBuffer(const std::shared_ptr<tt::tt_metal::Buffer>&, std::vector<T>&) [with DType = unsigned int]’ is deprecated: Use distributed::ReadShard or distributed::EnqueueReadMeshBuffer instead. This API will be removed after 2026-10-30. [-Wdeprecated-declarations]
+  188 |   metal::detail::ReadFromBuffer(y_buf, y_words);
+      |   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+/localdev/ijankowski/tt-metal-pin/build/include/tt-metalium/tt_metal.hpp:167:6: note: declared here
+  167 | void ReadFromBuffer(const std::shared_ptr<Buffer>& buffer, std::vector<DType>& host_buffer) {
+      |      ^~~~~~~~~~~~~~
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp: In constructor ‘bw_syn::TtDeviceSession::TtDeviceSession(int)’:
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:230:34: warning: ‘tt::tt_metal::IDevice* tt::tt_metal::CreateDevice(tt::ChipId, uint8_t, size_t, size_t, const DispatchCoreConfig&, const std::vector<unsigned int>&, size_t)’ is deprecated: Use distributed::MeshDevice::create_unit_mesh instead. This API will be removed after 2026-09-27. [-Wdeprecated-declarations]
+  230 |   auto* dev = metal::CreateDevice(device_id_);
+      |               ~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~
+/localdev/ijankowski/tt-metal-pin/build/include/tt-metalium/host_api.hpp:102:10: note: declared here
+  102 | IDevice* CreateDevice(
+      |          ^~~~~~~~~~~~
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp: In destructor ‘bw_syn::TtDeviceSession::~TtDeviceSession()’:
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/host/tt_metal_backend.cpp:238:23: warning: ‘bool tt::tt_metal::CloseDevice(IDevice*)’ is deprecated: Use MeshDevice RAII or MeshDevice::close instead. This API will be removed after 2026-09-27. [-Wdeprecated-declarations]
+  238 |     metal::CloseDevice(as_device(device_));
+      |     ~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~
+/localdev/ijankowski/tt-metal-pin/build/include/tt-metalium/host_api.hpp:138:6: note: declared here
+  138 | bool CloseDevice(IDevice* device);
+      |      ^~~~~~~~~~~
+[ 11%] Linking CXX static library libbw_syn.a
+[ 36%] Built target bw_syn
+[ 38%] Building CXX object CMakeFiles/verify_tail_product.dir/tools/verify_tail_product.cpp.o
+[ 40%] Building CXX object CMakeFiles/bw_syn_cli.dir/tools/bw_syn_cli.cpp.o
+[ 43%] Building CXX object CMakeFiles/export_results.dir/tools/export_results.cpp.o
+[ 45%] Linking CXX executable test_bf16
+[ 47%] Linking CXX executable test_contract
+[ 50%] Building CXX object CMakeFiles/run_tt_harness.dir/tools/run_tt_harness.cpp.o
+[ 54%] Building CXX object CMakeFiles/summarize_tt_profiler.dir/tools/summarize_tt_profiler.cpp.o
+[ 56%] Linking CXX executable test_tanh_oracle
+[ 56%] Building CXX object CMakeFiles/test_scale_sep.dir/tests/test_scale_sep.cpp.o
+[ 59%] Building CXX object CMakeFiles/test_ir_transforms.dir/tests/test_ir_transforms.cpp.o
+[ 61%] Linking CXX executable test_sigmoid
+[ 63%] Building CXX object CMakeFiles/test_synth_semantics.dir/tests/test_synth_semantics.cpp.o
+[ 65%] Building CXX object CMakeFiles/test_tt_harness_sim.dir/tests/test_tt_harness_sim.cpp.o
+[ 68%] Linking CXX executable test_elu
+[ 70%] Built target test_bf16
+[ 75%] Built target test_contract
+[ 75%] Built target test_tanh_oracle
+[ 77%] Built target test_sigmoid
+[ 79%] Built target test_elu
+[ 81%] Linking CXX executable test_scale_sep
+[ 81%] Built target test_scale_sep
+[ 84%] Linking CXX executable test_ir_transforms
+[ 86%] Linking CXX executable test_tt_harness_sim
+[ 86%] Built target test_ir_transforms
+[ 86%] Built target test_tt_harness_sim
+[ 88%] Linking CXX executable test_synth_semantics
+[ 88%] Built target test_synth_semantics
+[ 90%] Linking CXX executable bw_syn_cli
+[ 90%] Built target bw_syn_cli
+[ 93%] Linking CXX executable run_tt_harness
+[ 93%] Built target run_tt_harness
+[ 95%] Linking CXX executable verify_tail_product
+[ 95%] Built target verify_tail_product
+[ 97%] Linking CXX executable export_results
+[100%] Linking CXX executable summarize_tt_profiler
+[100%] Built target export_results
+[100%] Built target summarize_tt_profiler

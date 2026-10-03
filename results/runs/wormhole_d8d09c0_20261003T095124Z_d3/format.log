@@ -1,0 +1,51 @@
+2026-10-03 09:51:45.708 | info     |          Device | Opening user mode device driver (tt_cluster.cpp:223)
+2026-10-03 09:51:45.708 | info     |             UMD | Cluster constructor started. (cluster.cpp:405)
+2026-10-03 09:51:45.725 | info     |             UMD | Creating TopologyDiscovery for architecture: wormhole_b0 (topology_discovery.cpp:131)
+2026-10-03 09:51:45.725 | info     |             UMD | Starting topology discovery. (topology_discovery.cpp:150)
+2026-10-03 09:51:45.787 | info     |             UMD | Established firmware bundle version: 19.8.1 (topology_discovery.cpp:654)
+2026-10-03 09:51:45.817 | info     |             UMD | Completed topology discovery. (topology_discovery.cpp:154)
+2026-10-03 09:51:45.826 | warning  |             UMD | Board 0x100035100000000 has 24 chips, but expected 32 chips for board type ubb. (cluster_descriptor.cpp:1263)
+2026-10-03 09:51:45.826 | warning  |             UMD | Board 0x100035130000000 has 8 chips, but expected 32 chips for board type ubb. (cluster_descriptor.cpp:1263)
+2026-10-03 09:51:47.284 | info     |             UMD | Opening local chip ids/PCIe ids: {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31}/[16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7] and remote chip ids {} (cluster.cpp:172)
+2026-10-03 09:51:47.285 | info     |             UMD | IOMMU: enabled (cluster.cpp:146)
+2026-10-03 09:51:47.285 | info     |             UMD | KMD version: 2.9.0 (cluster.cpp:149)
+2026-10-03 09:51:47.285 | info     |             UMD | Cluster constructor completed. (cluster.cpp:719)
+2026-10-03 09:51:47.305 | info     |             UMD | Starting devices in cluster (cluster.cpp:1305)
+2026-10-03 09:51:47.365 | info     |             UMD | Starting devices in cluster completed. (cluster.cpp:1314)
+2026-10-03 09:51:47.462 | info     |          Device | Slow dispatch mode: Using full logical grid (8, 10) (core_descriptor.cpp:257)
+2026-10-03 09:51:47.462 | info     |     Distributed | Using auto discovery to generate mesh graph. (metal_env.cpp:421)
+2026-10-03 09:51:47.462 | info     |     Distributed | Constructing control plane using auto-discovery (no mesh graph descriptor). (metal_env.cpp:483)
+2026-10-03 09:51:47.547 | info     |          Fabric | Loaded physical groupings from: /localdev/ijankowski/tt-metal-pin/tests/tt_metal/tt_fabric/physical_groupings/wh_bh_rev_c_galaxy_physical_grouping_descriptor.textproto (physical_grouping_descriptor_core.cpp:813)
+2026-10-03 09:51:47.580 | info     |          Fabric | Matching MESH mgd groupings to MESH groupings (physical_grouping_descriptor_matching.cpp:1428)
+2026-10-03 09:51:47.580 | info     |          Fabric | Grouping valid candidates by node difference (physical_grouping_descriptor_matching.cpp:1522)
+2026-10-03 09:51:47.583 | info     |          Fabric | Physical groupings: Mesh graph descriptor 'M0': 4 topology match(es), committed: 4x8_Mesh_flat (MESH), 4x8_Mesh_flat_torus_x (TORUSX), 4x8_Mesh_flat_torus_y (TORUSY), 4x8_Mesh_flat_torus_xy (TORUSXY) (physical_grouping_descriptor_matching.cpp:1731)
+2026-10-03 09:51:47.586 | info     |          Fabric | Physical groupings: Mesh graph descriptor 'M0': MGD placement fallback M0 (MESH) embeds on PSD (physical_grouping_descriptor_matching.cpp:1848)
+2026-10-03 09:51:47.596 | info     |          Device | Slow dispatch mode: Using full logical grid (8, 10) (core_descriptor.cpp:257)
+2026-10-03 09:51:47.768 | warning  |           Metal | Opening subset of mmio devices slows down UMD read/write to remote chips. If opening more devices, consider using distributed::MeshDevice::create_unit_meshes(). (device_manager.cpp:264)
+Building brisc, compile step:
+/localdev/ijankowski/tt-metal-pin/runtime/sfpi/compiler/bin/riscv-tt-elf-g++ -O2 -std=c++17 -ftt-nttp -ftt-constinit -ftt-consteval -ftt-no-dyninit -flto=1 -flto-partition=one -ffast-math -fno-finite-math-only -fsigned-zeros -fno-associative-math -fno-exceptions -fno-rtti -fno-use-cxa-atexit -g -MMD -Wall -Werror -Wno-error=deprecated-declarations -Wno-error=multistatement-macros -Wno-error=parentheses -Wno-error=unused-but-set-variable -Wno-unused-variable -Wno-unused-function --param=min-pagesize=0 -mcpu=tt-wh -fno-tree-loop-distribute-patterns -Winvalid-pch -Wno-error=invalid-pch -I. -I.. -I/localdev/ijankowski/tt-metal-pin/ -I/localdev/ijankowski/tt-metal-pin/ttnn -I/localdev/ijankowski/tt-metal-pin/ttnn/cpp -I/localdev/ijankowski/tt-metal-pin/tt_metal -I/localdev/ijankowski/tt-metal-pin/tt_metal/hw/inc -I/localdev/ijankowski/tt-metal-pin/tt_metal/tt-llk/common -I/localdev/ijankowski/tt-metal-pin/tt_metal/tt-llk/tools/include -I/localdev/ijankowski/tt-metal-pin/tt_metal/hostdevcommon/api -I/localdev/ijankowski/tt-metal-pin/tt_metal/api/ -I/localdev/ijankowski/tt-metal-pin/tt_metal/hw/ckernels/wormhole_b0/metal/common -I/localdev/ijankowski/tt-metal-pin/tt_metal/hw/ckernels/wormhole_b0/metal/llk_io -I/localdev/ijankowski/tt-metal-pin/tt_metal/hw/inc/internal/tt-1xx -I/localdev/ijankowski/tt-metal-pin/tt_metal/hw/inc/internal/tt-1xx/wormhole -I/localdev/ijankowski/tt-metal-pin/tt_metal/hw/inc/internal/tt-1xx/wormhole/wormhole_b0_defines -I/localdev/ijankowski/tt-metal-pin/tt_metal/hw/inc/internal/tt-1xx/wormhole/noc -I/localdev/ijankowski/tt-metal-pin/tt_metal/tt-llk/tt_llk_wormhole_b0/common/inc -I/localdev/ijankowski/tt-metal-pin/tt_metal/tt-llk/tt_llk_wormhole_b0/llk_lib -I/localdev/ijankowski/tt-metal-pin/tt_metal/hw/firmware/src/tt-1xx -I/home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow -include /localdev/ijankowski/tt-metal-cache/tt-metal-cache/pch/19830d7f1f56cafc/pch.h -DIS_NOT_POW2_NUM_DRAM_BANKS=1 -DIS_NOT_POW2_NUM_L1_BANKS=1 -DNUM_DRAM_BANKS=12 -DNUM_L1_BANKS=80 -DPCIE_NOC_X=0 -DPCIE_NOC_Y=3 -DTENSIX_FIRMWARE -DLOCAL_MEM_EN=0 -DPROCESSOR_INDEX=0 -DCOMPILE_FOR_BRISC -DPROGRAMMABLE_CORE_TYPE=0 -DARCH_WORMHOLE -DDISPATCH_MESSAGE_ADDR=4290183304 -DKERNEL_BUILD -DNOC_INDEX=0 -DNOC_MODE=0 -DFULL_KERNEL_NAME="reader_dual_tiles/653744730922271454/" -DKERNEL_COMPILE_TIME_ARGS=0,1 -c -o /localdev/ijankowski/tt-metal-cache/tt-metal-cache3664672193747463731/kernels/reader_dual_tiles/653744730922271454/brisc/brisck.9159355037612188971_6042.o /localdev/ijankowski/tt-metal-pin/tt_metal/hw/firmware/src/tt-1xx/brisck.cc -MF /localdev/ijankowski/tt-metal-cache/tt-metal-cache3664672193747463731/kernels/reader_dual_tiles/653744730922271454/brisc/brisck.9159355037612188971_6042.d
+In file included from ../kernel_includes.hpp:2,
+                 from /localdev/ijankowski/tt-metal-pin/tt_metal/hw/firmware/src/tt-1xx/brisck.cc:21:
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp: In function 'void kernel_main()':
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp:21:24: warning: 'void noc_async_read_tile(uint32_t, const InterleavedAddrGenFast<DRAM, tile_hw>&, uint32_t, uint32_t, uint8_t) [with bool DRAM = true; long unsigned int tile_hw = 1024; uint32_t = long unsigned int; uint8_t = unsigned char]' is deprecated: Use <typename AddrGen> noc_async_read_page instead. [-Wdeprecated-declarations]
+   21 |     noc_async_read_tile(i, src0, get_write_ptr(cb_x));
+      |     ~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /localdev/ijankowski/tt-metal-pin/tt_metal/hw/inc/internal/firmware_common.h:23,
+                 from /localdev/ijankowski/tt-metal-pin/tt_metal/hw/firmware/src/tt-1xx/brisck.cc:16:
+/localdev/ijankowski/tt-metal-pin/tt_metal/hw/inc/api/dataflow/dataflow_api.h:1173:19: note: declared here
+ 1173 | FORCE_INLINE void noc_async_read_tile(
+      |                   ^~~~~~~~~~~~~~~~~~~
+/home/ijankowski/tmp/numerical-backward-synthesis/tt/kernels/dataflow/reader_dual_tiles.cpp:22:24: warning: 'void noc_async_read_tile(uint32_t, const InterleavedAddrGenFast<DRAM, tile_hw>&, uint32_t, uint32_t, uint8_t) [with bool DRAM = true; long unsigned int tile_hw = 1024; uint32_t = long unsigned int; uint8_t = unsigned char]' is deprecated: Use <typename AddrGen> noc_async_read_page instead. [-Wdeprecated-declarations]
+   22 |     noc_async_read_tile(i, src1, get_write_ptr(cb_g));
+      |     ~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/localdev/ijankowski/tt-metal-pin/tt_metal/hw/inc/api/dataflow/dataflow_api.h:1173:19: note: declared here
+ 1173 | FORCE_INLINE void noc_async_read_tile(
+      |                   ^~~~~~~~~~~~~~~~~~~
+format probe: 8 observations written to results/runs/wormhole_d8d09c0_20261003T095124Z_d3/format.csv
+2026-10-03 09:51:48.144 | info     |    BuildKernels | JIT cache stats: 16/17 hits (94.1%) [16 cached, 48 build-once dedup, 0 merged artifacts, 0 merged genfiles] (build_cache_telemetry.cpp:268)
+2026-10-03 09:51:48.144 | info     |    BuildKernels | JIT telemetry: 28 registered TelemetryTokens (build_cache_telemetry.cpp:325)
+2026-10-03 09:51:48.170 | info     |          Device | Closing user mode device drivers (tt_cluster.cpp:519)
+2026-10-03 09:51:48.170 | info     |             UMD | Closing devices in cluster (cluster.cpp:1319)
+2026-10-03 09:51:48.246 | info     |             UMD | Closing devices in cluster completed. (cluster.cpp:1329)
+2026-10-03 09:51:48.246 | info     |             UMD | Cluster destructor started. (cluster.cpp:1050)
+2026-10-03 09:51:48.246 | info     |             UMD | Cluster destructor completed. (cluster.cpp:1063)

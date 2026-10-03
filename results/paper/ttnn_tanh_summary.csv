@@ -1,2 +1,2 @@
 label,arch,tt_metal_commit,scope,tiles,warmup,repeat,median_ns,p95_ns,ttnn_module_path,ttnn_module_under_source
-ttnn_device,wormhole,f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee,host_enqueue_to_sync,10,5,30,34121.5,37306,/localdev/ijankowski/tt-metal-pin/ttnn/ttnn/__init__.py,1
+ttnn_device,wormhole,f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee,host_enqueue_to_sync,10,5,30,34227.0,39610,/localdev/ijankowski/tt-metal-pin/ttnn/ttnn/__init__.py,1

@@ -1,0 +1,6 @@
+label,arch,tt_metal_commit,zone,tiles,warmup,measured,median_cycles,p95_cycles,median_cycles_per_tile,p95_cycles_per_tile,raw_profiler
+device,wormhole,f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee,BW_SYN_TANH_TAIL_FUSED,128,5,20,271603.000,280575.000,2121.898,2191.992,results/runs/wormhole_d8d09c0_20261003T095157Z_d4/raw_profiler.csv
+device,wormhole,f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee,BW_SYN_TANH_TAIL_SPLIT4,128,5,20,400032.000,400162.000,3125.250,3126.266,results/runs/wormhole_d8d09c0_20261003T095157Z_d4/raw_profiler.csv
+device,wormhole,f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee,BW_SYN_TANH_MATERIALIZED,128,5,20,526928.000,527026.000,4116.625,4117.391,results/runs/wormhole_d8d09c0_20261003T095157Z_d4/raw_profiler.csv
+device,wormhole,f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee,BW_SYN_TANH_VENDOR_DERIVATIVE,128,5,20,435804.000,489931.000,3404.719,3827.586,results/runs/wormhole_d8d09c0_20261003T095157Z_d4/raw_profiler.csv
+device,wormhole,f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee,BW_SYN_TANH_VENDOR_FUSED,128,5,20,221997.500,230757.000,1734.355,1802.789,results/runs/wormhole_d8d09c0_20261003T095157Z_d4/raw_profiler.csv
