@@ -86,6 +86,10 @@ struct TailCaseResult {
   bool baseline_pass{false};
   std::optional<bool> vendor_pass;
   bool timed_input{false};
+  BF16 split4;
+  bool split4_pass{false};
+  std::optional<BF16> vendor_fused;
+  std::optional<bool> vendor_fused_pass;
 };
 
 struct TailRunReport {
@@ -94,8 +98,11 @@ struct TailRunReport {
   std::size_t normal_outputs{0};
   std::size_t baseline_normal_passes{0};
   std::optional<std::size_t> vendor_normal_passes;
+  std::size_t split4_normal_passes{0};
+  std::optional<std::size_t> vendor_fused_normal_passes;
+  int polynomial_degree{3};
   bool all_normal_outputs_pass{false};
-  // Timed runs reuse one fixed batch of normal-output tiles for both kernels.
+  // Timed runs reuse one fixed batch of normal-output tiles for every kernel.
   std::size_t timing_tiles{0};
   int device_warmup_runs{0};
   int device_measured_runs{0};
@@ -103,7 +110,8 @@ struct TailRunReport {
 
 std::vector<std::pair<BF16, BF16>> tail_tanh_cases();
 inline constexpr std::size_t kTailTimingTiles = 128;
-TailRunReport run_tail_tanh(DeviceMode prefer = DeviceMode::HostSim, bool timed = false);
+TailRunReport
+run_tail_tanh(DeviceMode prefer = DeviceMode::HostSim, bool timed = false, int degree = 3);
 
 struct FormatProbeRow {
   std::string stage;

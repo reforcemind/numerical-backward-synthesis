@@ -17,6 +17,7 @@ int main(int argc, char** argv) {
   bool tail_sweep = false;
   bool format_probe = false;
   bool timed = false;
+  int degree = 3;
   std::string out;
   for (int i = 1; i < argc; ++i) {
     std::string a = argv[i];
@@ -28,8 +29,19 @@ int main(int argc, char** argv) {
       format_probe = true;
     else if (a == "--timed")
       timed = true;
-    else if (a == "--csv" && i + 1 < argc)
+    else if (a == "--tail-degree" && i + 1 < argc) {
+      const std::string value = argv[++i];
+      if (value != "3" && value != "4") {
+        std::cerr << "--tail-degree must be 3 or 4\n";
+        return 2;
+      }
+      degree = value == "3" ? 3 : 4;
+    } else if (a == "--csv" && i + 1 < argc)
       out = argv[++i];
+    else {
+      std::cerr << "unknown or incomplete argument: " << a << "\n";
+      return 2;
+    }
   }
   if (tail_sweep && format_probe) {
     std::cerr << "choose one of --tail-sweep and --format-probe\n";
@@ -76,7 +88,7 @@ int main(int argc, char** argv) {
   if (tail_sweep) {
     TailRunReport rep;
     try {
-      rep = run_tail_tanh(prefer, timed);
+      rep = run_tail_tanh(prefer, timed, degree);
     } catch (const std::exception& ex) {
       std::cerr << ex.what() << "\n";
       return 3;
@@ -86,25 +98,34 @@ int main(int argc, char** argv) {
       fs::create_directories(path.parent_path());
     std::vector<std::string> rows;
     for (const auto& c : rep.cases)
-      rows.push_back(std::string(prefer == DeviceMode::TtMetal ? "device_probe" : "host_model") +
-                     "," + rep.device.arch + "," + rep.device.tt_metal_commit + "," +
-                     hex16(c.x.bits) + "," + hex16(c.g.bits) + "," + hex16(c.oracle.bits) + "," +
-                     hex16(c.observed.bits) + "," +
-                     (c.normal_output ? "finite_normal_output" : "outside_scope") + "," +
-                     (c.normal_output ? (c.pass ? "1" : "0") : "") + "," + hex16(c.baseline.bits) +
-                     "," + (c.normal_output ? (c.baseline_pass ? "1" : "0") : "") + "," +
-                     (c.timed_input ? "1" : "0") + "," + (c.vendor ? hex16(c.vendor->bits) : "") +
-                     "," + (c.vendor_pass ? (*c.vendor_pass ? "1" : "0") : ""));
+      rows.push_back(
+          std::string(prefer == DeviceMode::TtMetal ? "device_probe" : "host_model") + "," +
+          rep.device.arch + "," + rep.device.tt_metal_commit + "," + hex16(c.x.bits) + "," +
+          hex16(c.g.bits) + "," + hex16(c.oracle.bits) + "," + hex16(c.observed.bits) + "," +
+          (c.normal_output ? "finite_normal_output" : "outside_scope") + "," +
+          (c.normal_output ? (c.pass ? "1" : "0") : "") + "," + hex16(c.baseline.bits) + "," +
+          (c.normal_output ? (c.baseline_pass ? "1" : "0") : "") + "," +
+          (c.timed_input ? "1" : "0") + "," + (c.vendor ? hex16(c.vendor->bits) : "") + "," +
+          (c.vendor_pass ? (*c.vendor_pass ? "1" : "0") : "") + "," + hex16(c.split4.bits) + "," +
+          (c.normal_output ? (c.split4_pass ? "1" : "0") : "") + "," +
+          std::to_string(rep.polynomial_degree) + "," +
+          (c.vendor_fused ? hex16(c.vendor_fused->bits) : "") + "," +
+          (c.vendor_fused_pass ? (*c.vendor_fused_pass ? "1" : "0") : ""));
     if (!write_csv(out,
                    "label,arch,tt_metal_commit,x_bits,g_bits,oracle_bits,observed_bits,scope,pass,"
-                   "baseline_bits,baseline_pass,timed_input,vendor_bits,vendor_pass",
+                   "baseline_bits,baseline_pass,timed_input,vendor_bits,vendor_pass,"
+                   "split4_bits,split4_pass,polynomial_degree,vendor_fused_bits,vendor_fused_pass",
                    rows))
       return 1;
-    std::cout << "tail sweep: " << rep.normal_outputs << " normal-output cases of "
-              << rep.cases.size() << "; all pass=" << rep.all_normal_outputs_pass
-              << "; materialized baseline passes " << rep.baseline_normal_passes << "\n";
+    std::cout << "fused tail degree " << degree << ": " << rep.normal_outputs
+              << " normal-output cases of " << rep.cases.size()
+              << "; all pass=" << rep.all_normal_outputs_pass << "; materialized baseline passes "
+              << rep.baseline_normal_passes << "\n";
+    std::cout << "split4 passes " << rep.split4_normal_passes << "\n";
     if (rep.vendor_normal_passes)
       std::cout << "vendor derivative-times-gradient passes " << *rep.vendor_normal_passes << "\n";
+    if (rep.vendor_fused_normal_passes)
+      std::cout << "fused vendor tail passes " << *rep.vendor_fused_normal_passes << "\n";
     if (rep.timing_tiles != 0)
       std::cout << "tail timing: " << rep.timing_tiles << " tiles, " << rep.device_warmup_runs
                 << " warmup + " << rep.device_measured_runs << " measured launches per kernel\n";

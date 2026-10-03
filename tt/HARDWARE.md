@@ -13,28 +13,64 @@ Those measurements are diagnostic and excluded from paper performance claims.
 
 ## Next Wormhole exploration
 
-After pulling branch `wh3`, use the same `TT_METAL_HOME` and
+After pulling branch `wh4`, use the same `TT_METAL_HOME` and
 `BW_SYN_ARCH=wormhole` environment as below, with `torch` and `ttnn` optional
 for this mode:
 
 ```bash
-./tt/scripts/run_on_device.sh --tail-timing
+git fetch origin
+git switch wh4
+git pull --ff-only
+./tt/scripts/run_on_device.sh
 ```
 
-This checks every positive BF16 `x` encoding from 4 through 88.5 for six
-gradient values, plus selected negative `x` values, before timing. It compares the
-candidate, the materialized helper, and tt-metal's tanh-derivative primitive
-multiplied by the same gradient. On a passing candidate sweep, it times 128
-recorded, exponent-spread inputs for all three kernels, then runs raw BF16
-transport and compute probes. Send `results/hw/tail_timed_wormhole.csv`,
-`results/hw/format_wormhole.csv`, `results/hw/tail_cycles_wormhole.csv`, the
-matching logs, the raw profiler CSV, and
-`results/hw/explore_provenance_wormhole.txt`. The script requires committed
-tracked source changes. These are development diagnostics, not paper
-measurements. A failing candidate sweep still writes its correctness CSV and
-format probe, but withholds the timing summary. The tail candidate has no
-special-input guard and does not claim subnormal output support or full-domain
-correctness.
+The default now runs the fused polynomial/exponent candidate, not the old ten-case
+critical harness. It checks 6,774 constant tiles: every positive BF16 `x` encoding
+from 4 through 88.5, six fixed gradients, six signed gradients around the rounded
+normal-output boundary, and selected negative `x` values. Only normal reference
+outputs are in scope. The host reference classifies 4,636 cases as in scope.
+
+Five kernels share the same inputs and dataflow: fused candidate, previous split4,
+materialized helper, vendor tanh derivative times gradient, and a fused vendor
+tail times gradient. The last comparator uses the same SFPU traversal and packing
+as the candidate. Every comparator's correctness is recorded; a faster comparator
+that fails the contract is not an equally accurate baseline.
+
+After a passing candidate sweep, the harness times 128 recorded inputs (five
+warmups, 20 measurements), checks candidate outputs on every timed launch, and
+runs BF16 transport/compute probes. Each tile repeats one pair across 1,024 lanes;
+mixed-lane tensors and end-to-end workloads remain future validation. Zones
+include buffer waits and packing; these are single-core development diagnostics.
+
+All evidence, including build failures, is saved in an unignored
+`results/runs/wormhole_<source>_<UTC>_d3/` directory: provenance, build log,
+correctness CSV/log, raw profiler, cycle summary, and format probes. Commit the
+whole packet after the run:
+
+```bash
+git add results/runs
+git commit -m "Wormhole fused tail run"
+git push origin wh4
+```
+
+The script requires committed tracked source changes. A failing numerical sweep
+still writes correctness and format results but withholds timing. A JIT/build
+failure preserves the log and exit status. The new SFPI path has been reviewed
+against the pinned sources but has not been compiled on the board.
+
+Optional ablations (each writes a separate evidence directory):
+
+```bash
+BW_SYN_TAIL_DEGREE=4 ./tt/scripts/run_on_device.sh  # quartic accuracy variant
+BW_SYN_CB_TILES=1 ./tt/scripts/run_on_device.sh    # buffer-depth ablation
+./tt/scripts/run_on_device.sh --explore           # correctness only
+./tt/scripts/run_on_device.sh --critical          # old ten-case path + TTNN
+```
+
+The tail path requires finite normal `g` and `4 <= |x| <= 88.5`; its contract covers
+normal BF16 reference outputs only. It has no full-domain dispatch or special-input
+guard. The 50% reduction in cycles is an unmeasured target; compare against both
+split4 and the fused vendor baseline before attributing a gain to the algorithm.
 
 ## Roles
 
@@ -106,24 +142,27 @@ cmake --build build-tt -j 2
 ### Step C — run device harness
 
 ```bash
-# one-shot (recommended):
-python3 -c 'import torch, ttnn'
+# one-shot tail experiment (recommended; no torch/ttnn dependency):
 ./tt/scripts/run_on_device.sh
 
-# or manually:
+# legacy ten-case critical experiment:
+python3 -c 'import torch, ttnn'
+./tt/scripts/run_on_device.sh --critical
+
+# or manually reproduce that legacy experiment:
 ./build-tt/export_results --out results
 TT_METAL_DEVICE_PROFILER=1 ./build-tt/run_tt_harness --device --csv results/hw/${BW_SYN_ARCH}.csv
 python3 tt/scripts/ttnn_tanh_baseline.py --device-csv results/hw/${BW_SYN_ARCH}.csv
 ```
 
-The one-shot path builds the project, enables profiling for the two Metal kernels, copies a fresh
+The legacy `--critical` path builds the project, enables profiling for two Metal kernels, copies a fresh
 raw profiler log to `results/paper/`, then disables profiling and measures
 TTNN `tanh_bw` on the same ten BF16 tiles. The TTNN CSVs record output bits,
 individual enqueue-to-synchronize host times, median and p95, and the module
 path. Confirm that the imported TTNN build came from the pinned revision; a
 module path outside the source tree is marked unverified.
 
-### Step D — acceptance (must all be true before citing device)
+### Step D — legacy full-domain acceptance (still failing subnormal cases)
 
 Open `results/hw/wormhole.csv` (or `blackhole.csv`) and `results/paper/device_status.csv`.
 
@@ -159,13 +198,15 @@ documents the profiler flag and raw log location; check them against the pin.
 |------|------|
 | `tt/kernels/compute/tanh_bw_scale_separated.cpp` | Device: factored `g*h*h`, with `h=2 exp(-|x|)/(1+exp(-2|x|))`; pack once |
 | `tt/kernels/compute/tanh_bw_baseline.cpp` | Device: the same `h`, pack/unpack `h*h`, then multiply by `g` |
+| `tt/kernels/compute/tanh_bw_tail_fused.cpp` | Scoped fused polynomial/exponent product; degree 0 selects fused vendor comparator |
+| `include/bw_syn/detail/tail_exp_product.hpp` | Shared arithmetic body for host and device adapters |
 | `tt/kernels/common/tanh_factor.h` | Shared tile-wide exponential and reciprocal sequence |
 | `tt/kernels/dataflow/` | Reader / writer |
 | `tt/kernels/common/cb_indices.h` | Shared CB indices |
 | `tt/host/tt_metal_backend.cpp` | Host launch (`TtDeviceSession`) |
 | `kernels/generated/` | **SFPI sketch** for supported nodes only (not device-linked) |
 
-The device kernel is a hand-written factorization, not a lowering of the scale-aware
+The legacy device kernel is a hand-written factorization, not a lowering of the scale-aware
 IR. The emitter rejects unsupported exponent and rounding nodes rather than
 changing their meaning. The compute kernels use documented tile-wide exp and
 reciprocal operations with FP32 destination accumulation, but their numerical

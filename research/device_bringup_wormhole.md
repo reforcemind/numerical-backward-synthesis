@@ -1,8 +1,9 @@
 # Wormhole device bring-up: tanh backward (first measurements)
 
 **Diagnostic record only.** This run is excluded from paper performance tables.
-The later `wh2` profiler trace is described below. Its correctness and format
-probe CSVs were not included in the uploaded commit.
+The later `wh2` profiler trace and `wh3` rerun are described below. The first-run
+tables are historical; `wh3` overwrote the default `results/paper` filenames.
+Use the referenced Git revisions when reproducing an older table.
 
 First on-board run of the two tanh-backward compute kernels and the TTNN
 `tanh_bw` baseline. Everything here is **device**-labelled. It comes from one
@@ -238,7 +239,7 @@ source $PYTHON_ENV_DIR/bin/activate
 export TT_METAL_HOME=~/tt-metal-work/tt-metal
 export BW_SYN_ARCH=wormhole BW_SYN_TT_DEVICE_ID=0 BW_SYN_BUILD_JOBS=16 BUILD_DIR=$L/bw-syn-build-tt
 cd ~/tmp/numerical-backward-synthesis
-./tt/scripts/run_on_device.sh; echo "exit=$?"   # currently exits 1 (subnormal rows)
+./tt/scripts/run_on_device.sh --critical; echo "exit=$?"   # legacy path: subnormal rows fail
 ```
 
 Do not reuse a tt-metal build directory that was configured with
@@ -263,3 +264,32 @@ were timed, or where BF16 subnormals disappeared. The `wh3` harness gates timing
 on the full normal-output sweep, records the timed input selection, checks the
 profiler launch order, and compares the pinned tt-metal tanh-derivative primitive
 multiplied by the same gradient. A fresh device run is required for those claims.
+
+## Run 3: the default command repeated the legacy path
+
+Results commit `e35b636` records source
+`acaa87bbe49f79d8c539a6971f14b6131364a659`, UTC start
+`2026-10-02T14:06:37Z`, and the same tt-metal pin
+`f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee`.
+
+| Legacy variant | Median cycles/tile | p95 cycles/tile |
+|----------------|-------------------:|----------------:|
+| Guarded factored | 5,749.750 | 5,762.000 |
+| Materialized | 4,206.650 | 4,210.200 |
+
+The factored kernel again passes 8/10 critical cases. `(46,4)` and `(45,2)`
+return zero for subnormal oracle outputs `0x0013` and `0x0047`. TTNN reports
+34,121.5 ns median host enqueue-to-sync time; that timing scope cannot be
+compared to the compute-zone cycle counts above.
+
+This packet contains no tail correctness, tail cycle summary, or format probe.
+It therefore provides no evidence for or against the `wh3` tail candidate.
+The old no-argument script selected the critical harness, and exploratory
+filenames under `results/hw` were ignored by Git. Both contributed to an
+ambiguous handoff.
+
+On `wh4`, the default command selects the new fused tail experiment and saves
+every run under an unignored timestamped `results/runs/` directory, including
+failure logs. The cubic/quartic candidate and its fair fused vendor comparator
+are described in `research/numerical_semantics.md`; neither has device results
+yet. The previous ten-case path remains available with `--critical`.

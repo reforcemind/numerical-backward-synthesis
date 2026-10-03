@@ -71,10 +71,25 @@ int main() {
   }
   assert(checked > 1000);
   const auto tail = run_tail_tanh(DeviceMode::HostSim);
-  assert(tail.cases.size() == 3402);
+  assert(tail.cases.size() == 6774);
   assert(tail.normal_outputs > 2900);
   assert(tail.all_normal_outputs_pass);
   assert(!tail.vendor_normal_passes);
+  for (const auto [xb, gb] : std::vector<std::pair<std::uint16_t, std::uint16_t>>{
+           {0x4080, 0x053a}, {0x4083, 0x0560}, {0x4234, 0x4080}, {0x42b1, 0x7f7f}}) {
+    for (const std::uint16_t sx : {0, 0x8000})
+      for (const std::uint16_t sg : {0, 0x8000}) {
+        const auto xi = bw_syn::BF16::from_bits(xb | sx);
+        const auto gi = bw_syn::BF16::from_bits(gb | sg);
+        const auto ref = bw_syn::contract_reference(bw_syn::BackwardKind::Tanh, contract, xi, gi);
+        assert(ref.is_normal());
+        for (int degree : {3, 4}) {
+          const auto got = bw_syn::tanh_bw::tail_fused_host(xi, gi, contract, degree);
+          assert(bw_syn::check_sample(contract, xi, gi, got, ref).verdict ==
+                 bw_syn::ContractVerdict::Pass);
+        }
+      }
+  }
   const auto format = run_format_probe(DeviceMode::HostSim);
   assert(format.rows.size() == 8);
   for (const auto& row : format.rows)

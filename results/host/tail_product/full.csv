@@ -1,0 +1,5 @@
+label,function,degree,gradient_domain,checked,failed,max_ulp,worst_x_bits,worst_g_bits
+host_model,tanh_backward,3,all_positive_normal_g,12768182,0,1,0x4080,0x053b
+host_model,tanh_backward,4,all_positive_normal_g,12768182,0,1,0x4080,0x053e
+host_model,sigmoid_backward,3,all_positive_normal_g,12624474,0,1,0x4100,0x063b
+host_model,sigmoid_backward,4,all_positive_normal_g,12624474,0,1,0x4100,0x063e

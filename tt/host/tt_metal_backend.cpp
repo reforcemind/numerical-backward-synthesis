@@ -62,6 +62,10 @@ std::string compute_kernel_path(TtKernelKind kind) {
     return kernel_file("tt/kernels/compute/tanh_bw_baseline.cpp");
   case TtKernelKind::TanhTailSplit4:
     return kernel_file("tt/kernels/compute/tanh_bw_tail_split4.cpp");
+  case TtKernelKind::TanhTailFused3:
+  case TtKernelKind::TanhTailFused4:
+  case TtKernelKind::VendorTailFused:
+    return kernel_file("tt/kernels/compute/tanh_bw_tail_fused.cpp");
   case TtKernelKind::VendorTanhDerivative:
     return kernel_file("tt/kernels/compute/tanh_bw_vendor_derivative.cpp");
   case TtKernelKind::ProbeComputeCopy:
@@ -118,8 +122,15 @@ std::vector<BF16> run_on_device(MetalDevice* device,
   metal::detail::WriteToBuffer(g_buf, g_words);
 
   const tt::DataFormat df = tt::DataFormat::Float16_b;
+  std::uint32_t cb_tiles = 2;
+  if (const char* value = std::getenv("BW_SYN_CB_TILES")) {
+    if (std::string(value) != "1" && std::string(value) != "2")
+      throw std::runtime_error("BW_SYN_CB_TILES must be 1 or 2");
+    cb_tiles = std::string(value) == "1" ? 1 : 2;
+  }
   auto make_cb = [&](std::uint32_t idx) {
-    metal::CircularBufferConfig cbc(kTileBytes, {{idx, df}});
+    metal::CircularBufferConfig cbc(kTileBytes * (idx == BW_SYN_CB_TMP ? 1 : cb_tiles),
+                                    {{idx, df}});
     cbc.set_page_size(idx, kTileBytes);
     metal::CreateCircularBuffer(program, core, cbc);
   };
@@ -154,6 +165,10 @@ std::vector<BF16> run_on_device(MetalDevice* device,
       program, writer, core, {static_cast<std::uint32_t>(y_buf->address()), n_tiles});
   if (kind != TtKernelKind::ProbeRawCopy) {
     std::vector<std::uint32_t> compute_args;
+    if (kind == TtKernelKind::TanhTailFused3 || kind == TtKernelKind::TanhTailFused4)
+      compute_args.push_back(kind == TtKernelKind::TanhTailFused3 ? 3 : 4);
+    if (kind == TtKernelKind::VendorTailFused)
+      compute_args.push_back(0);
     if (kind == TtKernelKind::ProbeComputeCopy || kind == TtKernelKind::ProbeComputeMul)
       compute_args.push_back(kind == TtKernelKind::ProbeComputeMul ? 1 : 0);
     auto compute =

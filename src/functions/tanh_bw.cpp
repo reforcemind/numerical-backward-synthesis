@@ -2,8 +2,10 @@
 
 #include "bw_syn/detail/ir_build.hpp"
 #include "bw_syn/detail/scale_eval.hpp"
+#include "bw_syn/detail/tail_exp_host.hpp"
 
 #include <cmath>
+#include <stdexcept>
 
 namespace bw_syn {
 namespace tanh_bw {
@@ -27,6 +29,23 @@ BF16 tail_split4_host(BF16 x, BF16 g, const NumericalContract& c) {
   if (c.flush_output_subnormals)
     out = flush_subnormals(out);
   return out;
+}
+
+BF16 tail_fused_host(BF16 x, BF16 g, const NumericalContract& c, int degree) {
+  const float ax = std::fabs(x.to_f32());
+  if (!x.is_finite() || ax < 4.0f || ax > 88.5f || !g.is_normal())
+    throw std::invalid_argument("fused tail requires 4 <= |x| <= 88.5 and normal finite g");
+  if (c.output_round != RoundMode::ToNearestEven)
+    throw std::invalid_argument("fused tail requires BF16 round-to-nearest-even");
+  float value;
+  if (degree == 3)
+    value = detail::tail_exp_product<detail::HostTailOps, 3>(x.to_f32(), g.to_f32());
+  else if (degree == 4)
+    value = detail::tail_exp_product<detail::HostTailOps, 4>(x.to_f32(), g.to_f32());
+  else
+    throw std::invalid_argument("tail polynomial degree must be 3 or 4");
+  BF16 out = round_to_bf16(value, c.output_round);
+  return c.flush_output_subnormals ? flush_subnormals(out) : out;
 }
 
 static int sech2(Program& p, int x) {

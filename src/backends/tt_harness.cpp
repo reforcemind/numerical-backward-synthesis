@@ -190,6 +190,14 @@ std::vector<std::pair<BF16, BF16>> tail_tanh_cases() {
     const BF16 x = BF16::from_bits(static_cast<std::uint16_t>(bits));
     for (const BF16 g : gradients)
       cases.emplace_back(x, g);
+    const double midpoint = BF16::min_normal().to_f64() - 0.5 * BF16::min_subnormal().to_f64();
+    const BF16 threshold =
+        BF16::from_f64(midpoint / exact_derivative_f64(BackwardKind::Tanh, x.to_f64()));
+    for (int delta : {-1, 0, 1}) {
+      const auto gb = static_cast<std::uint16_t>(threshold.bits + delta);
+      for (const std::uint16_t sign : {0, 0x8000})
+        cases.emplace_back(x, BF16::from_bits(gb | sign));
+    }
   }
   for (const BF16 x : {BF16::from_f64(45),
                        BF16::from_f64(88.5),
@@ -201,8 +209,11 @@ std::vector<std::pair<BF16, BF16>> tail_tanh_cases() {
   return cases;
 }
 
-TailRunReport run_tail_tanh(DeviceMode prefer, bool timed) {
+TailRunReport run_tail_tanh(DeviceMode prefer, bool timed, int degree) {
+  if (degree != 3 && degree != 4)
+    throw std::invalid_argument("tail polynomial degree must be 3 or 4");
   TailRunReport rep;
+  rep.polynomial_degree = degree;
   rep.device = probe_device();
   const auto contract = NumericalContract::bf16_default("tanh_backward");
   const auto cases = tail_tanh_cases();
@@ -210,7 +221,7 @@ TailRunReport run_tail_tanh(DeviceMode prefer, bool timed) {
   oracles.reserve(cases.size());
   for (const auto& [x, g] : cases)
     oracles.push_back(contract_reference(BackwardKind::Tanh, contract, x, g));
-  std::vector<BF16> observed, baseline, vendor;
+  std::vector<BF16> observed, baseline, vendor, split4, vendor_fused;
   observed.reserve(cases.size());
   baseline.reserve(cases.size());
 #if defined(BW_SYN_WITH_TTMETAL)
@@ -238,10 +249,13 @@ TailRunReport run_tail_tanh(DeviceMode prefer, bool timed) {
         out.insert(out.end(), batch.begin(), batch.end());
       }
     };
-    run_all(TtKernelKind::TanhTailSplit4, observed);
+    run_all(degree == 3 ? TtKernelKind::TanhTailFused3 : TtKernelKind::TanhTailFused4, observed);
+    run_all(TtKernelKind::TanhTailSplit4, split4);
     run_all(TtKernelKind::BaselineMaterialize, baseline);
     run_all(TtKernelKind::VendorTanhDerivative, vendor);
+    run_all(TtKernelKind::VendorTailFused, vendor_fused);
     rep.vendor_normal_passes = 0;
+    rep.vendor_fused_normal_passes = 0;
 #else
     (void)timed;
     throw std::runtime_error("--device requires -DBW_SYN_WITH_TTMETAL=ON");
@@ -250,7 +264,8 @@ TailRunReport run_tail_tanh(DeviceMode prefer, bool timed) {
     if (timed)
       throw std::runtime_error("tail timing requires --device");
     for (const auto& [x, g] : cases) {
-      observed.push_back(tanh_bw::tail_split4_host(x, g, contract));
+      observed.push_back(tanh_bw::tail_fused_host(x, g, contract, degree));
+      split4.push_back(tanh_bw::tail_split4_host(x, g, contract));
       baseline.push_back(tanh_bw::baseline_materialize(x, g, contract));
     }
   }
@@ -265,11 +280,16 @@ TailRunReport run_tail_tanh(DeviceMode prefer, bool timed) {
     };
     const bool pass = passes(observed[i]);
     const bool baseline_pass = passes(baseline[i]);
+    const bool split4_pass = passes(split4[i]);
     std::optional<BF16> vendor_result;
     std::optional<bool> vendor_pass;
+    std::optional<BF16> vendor_fused_result;
+    std::optional<bool> vendor_fused_pass;
     if (!vendor.empty()) {
       vendor_result = vendor[i];
       vendor_pass = passes(vendor[i]);
+      vendor_fused_result = vendor_fused[i];
+      vendor_fused_pass = passes(vendor_fused[i]);
     }
     if (in_scope) {
       ++rep.normal_outputs;
@@ -277,8 +297,12 @@ TailRunReport run_tail_tanh(DeviceMode prefer, bool timed) {
         rep.all_normal_outputs_pass = false;
       if (baseline_pass)
         ++rep.baseline_normal_passes;
+      if (split4_pass)
+        ++rep.split4_normal_passes;
       if (vendor_pass.value_or(false))
         ++*rep.vendor_normal_passes;
+      if (vendor_fused_pass.value_or(false))
+        ++*rep.vendor_fused_normal_passes;
     }
     rep.cases.push_back(TailCaseResult{x,
                                        g,
@@ -289,7 +313,12 @@ TailRunReport run_tail_tanh(DeviceMode prefer, bool timed) {
                                        in_scope,
                                        pass,
                                        baseline_pass,
-                                       vendor_pass});
+                                       vendor_pass,
+                                       false,
+                                       split4[i],
+                                       split4_pass,
+                                       vendor_fused_result,
+                                       vendor_fused_pass});
   }
   if (rep.normal_outputs == 0)
     throw std::runtime_error("tail sweep has no normal-output cases");
@@ -302,7 +331,7 @@ TailRunReport run_tail_tanh(DeviceMode prefer, bool timed) {
         eligible.push_back(i);
     if (eligible.size() < kTailTimingTiles)
       throw std::runtime_error("tail timing needs more normal-output cases");
-    std::vector<BF16> xs, gs;
+    std::vector<BF16> xs, gs, expected;
     xs.reserve(kTailTimingTiles);
     gs.reserve(kTailTimingTiles);
     for (std::size_t j = 0; j < kTailTimingTiles; ++j) {
@@ -310,14 +339,22 @@ TailRunReport run_tail_tanh(DeviceMode prefer, bool timed) {
       rep.cases[i].timed_input = true;
       xs.push_back(cases[i].first);
       gs.push_back(cases[i].second);
+      expected.push_back(observed[i]);
     }
     rep.timing_tiles = xs.size();
     rep.device_warmup_runs = kDeviceWarmupRuns;
     rep.device_measured_runs = kDeviceMeasuredRuns;
     for (int i = 0; i < rep.device_warmup_runs + rep.device_measured_runs; ++i) {
+      const auto got = session->eval_batch(
+          degree == 3 ? TtKernelKind::TanhTailFused3 : TtKernelKind::TanhTailFused4, xs, gs);
+      if (!std::equal(got.begin(), got.end(), expected.begin(), expected.end(), [](BF16 a, BF16 b) {
+            return a.bits == b.bits;
+          }))
+        throw std::runtime_error("fused tail output changed during timing; reject this run");
       session->eval_batch(TtKernelKind::TanhTailSplit4, xs, gs);
       session->eval_batch(TtKernelKind::BaselineMaterialize, xs, gs);
       session->eval_batch(TtKernelKind::VendorTanhDerivative, xs, gs);
+      session->eval_batch(TtKernelKind::VendorTailFused, xs, gs);
     }
   }
 #endif

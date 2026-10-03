@@ -135,3 +135,89 @@ none of these checks covers every \((x,g)\) pair. The standalone host helper has
 separate exception handling and must be reported separately. IR evaluation uses the contract's
 rounding mode, but its transcendental operations are still f64 host approximations;
 directed-rounding guarantees over real arithmetic are not established.
+
+## Fused exponential-product candidate (wh4)
+
+`detail::tail_exp_product<Ops,Degree,Rate,Scale>` shares one arithmetic body
+between the IEEE FP32 host adapter and the Wormhole SFPI adapter. It approximates
+`g * 2^Scale * exp(-Rate*abs(x))` with the following schedule:
+
+1. Reduce `t=-Rate*abs(x)` to `k*ln(2)+r`, using an integer rounding step and
+   a two-part `ln(2)` constant.
+2. Evaluate a degree-three or degree-four Taylor polynomial on `|r| <= .347`.
+   The constant terms are raised to `1.0009` and `1.00006`, respectively.
+3. Replace the exponent of normal `g` by 127, multiply its signed significand
+   by the polynomial, and round that bounded product to BF16 precision.
+4. Compose the product exponent with the original gradient exponent, `k`, and
+   `Scale`. Reconstruct only the final value. No tiny derivative is materialized.
+
+For tanh, `(Rate,Scale)=(2,2)` and `4 <= |x| <= 88.5`. For sigmoid,
+`(Rate,Scale)=(1,0)` and `8 <= |x| <= 177`. The denominator `(1+exp(t))^2` is
+omitted. Only finite normal BF16 gradients and **normal BF16 reference outputs**
+are covered. Tanh has a device implementation; sigmoid currently has host checks
+only. These are specialized candidates, not full-domain replacements or generated
+lowerings of the existing synthesis IR. The output restriction is a verification
+scope, not a runtime dispatch test. Outside that scope, results are unspecified.
+
+The real-arithmetic Taylor remainder bounds on this interval are less than
+`0.000855` (cubic) and `0.0000594` (quartic). The upward offsets exceed these
+bounds. Including the omitted denominator gives conservative relative error
+bounds below `0.003156` and `0.000841` in real arithmetic. FP32 evaluation,
+coefficient rounding, target instructions, and final BF16 rounding must still be
+checked separately; these bounds are not device correctness proofs.
+
+### Repair at the rounded normal boundary
+
+Reconstructing an FP32 subnormal before rounding can lose an output that ought
+to round to BF16 minimum normal. Rounding the bounded significand first avoids
+most such failures. A remaining case occurs when the composed biased exponent
+is zero and the rounded normalized magnitude is at least `1.9921875`: the
+adapter returns signed minimum normal. This accounts for the coarser spacing on
+the BF16 subnormal side. It can promote a true subnormal reference to normal;
+it is valid only within the stated normal-reference-output scope. Tests cover
+both signs and gradients immediately around the boundary for every tested `x`.
+
+### Evidence and limits
+
+`verify_tail_product OUT_CSV` enumerates every positive BF16 `x` in the specified
+interval and every positive normal BF16 `g`, filtering by the rounded oracle
+output. On the recorded Windows GCC 13.2 Release build:
+
+| Function | Checks per degree | Degrees | Failures | Maximum BF16 ULP |
+|----------|------------------:|---------|---------:|-----------------:|
+| tanh backward | 12,768,182 | 3 and 4 | 0 | 1 |
+| sigmoid backward | 12,624,474 | 3 and 4 | 0 | 1 |
+
+These 50,785,312 **host** checks are against the independent scaled-f64 oracle,
+not correctly rounded real arithmetic. Negative inputs/gradients have selected
+regression tests, not a second exhaustive sweep. `--quick` is a sampled CI gate.
+The full CSV and source hashes are in `results/host/tail_product/`.
+
+The shared body prevents separately maintained formulas from drifting, but
+`std::fma` is not a bit-exact model of
+[Wormhole SFPMAD](https://github.com/tenstorrent/tt-isa-documentation/blob/main/WormholeB0/TensixTile/TensixCoprocessor/SFPMAD.md),
+which is partially fused. Device compilation, numerical behavior, cycles, and
+register pressure remain unmeasured for this candidate.
+
+### Attribution and next research gate
+
+The device experiment compares the candidate to split4, the materialized helper,
+the vendor derivative primitive, and the pinned vendor tail polynomial fused
+with `g` in the same traversal. All paths use the same reader and buffer capacity.
+`BW_SYN_CB_TILES=1` versus `2` isolates buffer capacity, though both use the new
+dual-read reader. A 50% cycle reduction means a factor-two throughput increase;
+it is a target, not a prediction or measured result.
+
+Range reduction, polynomial approximation, exponent reconstruction, and fusion
+are established techniques. [MegaLibm](https://arxiv.org/abs/2311.01515) already
+supports composable math-library implementations and synthesis;
+[RLibm](https://people.cs.rutgers.edu/~sn349/papers/rlibm32-pldi-2021-preprint.pdf)
+already targets final rounding constraints when constructing polynomials.
+This candidate alone does not establish a new PLDI contribution.
+
+The stronger direction is a synthesis rule for complete backward products with
+an exponent-equivariance proof: reduce interior gradient exponents to significands
+and verify boundary cases separately. The proof must cover signs, rounding,
+normal boundaries, and target arithmetic, followed by generated schedules for
+multiple functions and hardware comparison against equally accurate baselines.
+That rule is not proved or implemented here; `claimed_sound` remains false.

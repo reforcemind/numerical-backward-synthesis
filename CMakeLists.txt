@@ -78,6 +78,7 @@ bw_add_tool(bw_syn_cli)
 bw_add_tool(export_results)
 bw_add_tool(run_tt_harness)
 bw_add_tool(summarize_tt_profiler)
+bw_add_tool(verify_tail_product)
 
 if(BW_SYN_BUILD_TESTS)
   enable_testing()
@@ -92,6 +93,8 @@ if(BW_SYN_BUILD_TESTS)
     endif()
     add_test(NAME ${t} COMMAND ${t})
   endforeach()
+  add_test(NAME test_tail_product_quick
+    COMMAND verify_tail_product "${CMAKE_CURRENT_BINARY_DIR}/tail_product_quick.csv" --quick)
 endif()
 
 message(STATUS "bw_syn ${BW_SYN_VERSION_FILE} | tests=${BW_SYN_BUILD_TESTS} | ttmetal=${BW_SYN_WITH_TTMETAL}")
