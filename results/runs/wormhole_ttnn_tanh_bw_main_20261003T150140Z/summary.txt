@@ -1,0 +1,10 @@
+in_scope=4636
+pass=3258
+false_zero=1378
+wrong_nonzero=0
+cores_per_launch=[72]
+tiles_per_core=128
+median_cycles_per_tile_all_cores=4154.4
+min_core_cycles_per_tile=4130.1
+p95_cycles_per_tile=4171.9
+median_of_launch_medians=4154.4

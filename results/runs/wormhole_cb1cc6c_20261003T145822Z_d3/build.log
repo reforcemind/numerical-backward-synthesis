@@ -1,0 +1,22 @@
+-- Found umd at /localdev/ijankowski/tt-metal-pin/build/lib/cmake/umd
+-- Found TT-Metalium at /localdev/ijankowski/tt-metal-pin/build/lib/cmake/tt-metalium
+-- bw_syn 0.1.0 | tests=ON | ttmetal=ON
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: /localdev/ijankowski/bw-syn-build-pin
+[ 34%] Built target bw_syn
+[ 43%] Built target bw_syn_cli
+[ 43%] Built target run_tt_harness
+[ 50%] Built target export_results
+[ 52%] Built target verify_tail_product
+[ 56%] Built target test_bf16
+[ 60%] Built target test_contract
+[ 65%] Built target summarize_tt_profiler
+[ 71%] Built target synthesize_tail_product
+[ 73%] Built target test_tanh_oracle
+[ 78%] Built target test_scale_sep
+[ 82%] Built target test_ir_transforms
+[ 86%] Built target test_synth_semantics
+[ 91%] Built target test_sigmoid
+[ 95%] Built target test_tt_harness_sim
+[100%] Built target test_elu

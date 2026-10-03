@@ -291,5 +291,292 @@ ambiguous handoff.
 On `wh4`, the default command selects the new fused tail experiment and saves
 every run under an unignored timestamped `results/runs/` directory, including
 failure logs. The cubic/quartic candidate and its fair fused vendor comparator
-are described in `research/numerical_semantics.md`; neither has device results
-yet. The previous ten-case path remains available with `--critical`.
+are described in `research/numerical_semantics.md`; their device results are in
+Run 4 below. The previous ten-case path remains available with `--critical`.
+
+## Run 4: fused exponential-product tail on Wormhole (`wh4`)
+
+First device results for the fused candidate described in
+`research/numerical_semantics.md`. All numbers are **device**-labelled
+single-core diagnostics, not paper measurements.
+
+| | |
+|---|---|
+| Source | `d8d09c08de4818f65c83254c9ac3f596bbdaa5ea` (`wh4`), clean tree |
+| tt-metal | `f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee`, separate worktree build, slow dispatch |
+| Machine | `wh-glx6u-02`, reservation `241170` (earlier runs: `238565`), device 0 |
+| Main packet | `results/runs/wormhole_d8d09c0_20261003T095124Z_d3/` (degree 3, `cb_tiles=2`) |
+| Ablations | `…T095157Z_d4/` (degree 4), `…T095212Z_d3/` (degree 3, `cb_tiles=1`) |
+| Workload | 6,774 constant tiles; 4,636 have a normal BF16 reference output (in scope) |
+| Timing | 128 recorded inputs (`4 <= |x| <= 88.5`, oracle exponent fields 1 to 241), 5 warmups + 20 measured launches, 128 tiles per launch |
+
+### 4.1 Comparison
+
+Correctness is over the 4,636 in-scope cases. Cycles are medians over the 20
+measured launches, divided by 128 tiles. "Exact" counts outputs bit-identical
+to the oracle among that kernel's passing outputs.
+
+| Kernel | Pass | Failures | Exact | Median cyc/tile | p95 cyc/tile | vs split4 |
+|---|---:|---|---:|---:|---:|---:|
+| **Fused candidate, degree 3** | **4,636** | none | 88.6% | **2,027** | 2,093 | 0.65× |
+| Fused candidate, degree 4 | 4,636 | none | 98.8% | 2,122 | 2,192 | 0.68× |
+| Fused vendor tail × g | 3,278 | 1,358 return ±0 | 99.2% | 1,735 | 1,803 | 0.56× |
+| Split4 tail (`wh2`/`wh3`) | 3,798 | 838 return ±0 | 99.5% | 3,125 | 3,126 | 1.00× |
+| Vendor derivative × g | 3,278 | 1,358 return ±0 | 99.2% | 3,405 | 3,412 | 1.09× |
+| Materialized | 3,203 | 1,363 ±0, 70 wrong nonzero | 87.9% | 4,116 | 4,117 | 1.32× |
+
+All five medians were recomputed independently from the raw profiler CSV and
+agree with `cycles.csv`. The degree-3 candidate's signed error distribution
+is −1 ULP: 122, 0: 4,108, +1: 406. The upward skew matches the one-sided constant
+offsets in the polynomial.
+
+### 4.2 Analysis
+
+**What the approach is.** For finite tail inputs, the kernel never forms
+`sech²(x)` or `exp(-2|x|)` as a value. It range-reduces `t = -2|x|` to
+`k·ln2 + r`, evaluates a short polynomial in `r`, multiplies by the
+*significand* of `g` (exponent forced to 127), rounds that bounded product to
+BF16, and only then composes the final exponent from the product, `g`, `k` and
+the scale. The tiny factor exists only as an integer exponent. This is scale
+separation done with exponent arithmetic rather than with a second floating-point
+factor.
+
+**Why the comparators fail where they do.**
+
+- *Vendor derivative × g* and *fused vendor tail × g* fail on the same 1,358
+  cases, and every failure is a false zero. Their failing outputs reach BF16
+  exponent field 128 (values near 2). Once the derivative alone underflows,
+  no gradient can scale it back, even when `g` is near the BF16 maximum. Fusing
+  the vendor polynomial with `g` does not change this, because the product is
+  still formed after the derivative has gone to zero.
+- *Split4* fails only at oracle exponent field 1, the smallest normal binade
+  (838 cases, all false zeros). The host model of split4 passes all 4,636 cases.
+  The difference is consistent with the format probe in this packet: the device
+  compute path flushes FP32 subnormals and corrupts some field-1 values
+  (`0x0080` → `0x00c0`). Split4 passes through subnormal intermediates near the
+  boundary. The candidate rounds the bounded significand first and promotes to
+  signed minimum normal by setting the exponent directly, so it never relies on a
+  subnormal in DST.
+- *Materialized* fails the most (1,433) and is also the only path with wrong
+  nonzero outputs (70). Its host model passes 3,924, so most of its device
+  failures also come from the device path rather than the formula.
+
+**Device versus host model.** Of the 4,636 in-scope outputs, 4,630 are
+bit-identical between the device and the host `std::fma` adapter. The other 6
+differ by +1 ULP and still pass. Out of scope, 6 of 2,138 differ (min normal
+versus zero). `std::fma` is not a bit-exact model of SFPMAD. These 12
+differences are the measured size of that gap for this sweep only.
+
+**Where the speed comes from.** Against split4 the candidate saves 35% of
+cycles; against materialized it saves 51%; against the vendor derivative it saves
+40%. But the fused vendor comparator uses the same single SFPU traversal, reader
+and packing, and it is **14% faster** than the candidate (1,735 vs 2,027). The
+speed-up over split4 and materialized therefore comes mainly from **fusion**: one
+SFPU pass per tile instead of a chain of `*_init`/op pairs. It does not come
+from the exponent-composition method. The method's measured contribution is
+**correctness range**. It recovers the 1,358 vendor false zeros at a cost of
+about 292 cycles/tile (+17%) relative to an equally fused but inaccurate kernel.
+The 50% reduction target in the semantics note is met against materialized,
+not against split4 or the fused vendor baseline.
+
+**Degree 3 versus 4.** Degree 4 adds one multiply-add per element. It costs
+94 cycles/tile (+4.7%) and raises exact outputs from 88.6% to 98.8%. Both
+degrees stay within 1 ULP on every in-scope case. Degree 3 is the better choice
+under the current 1-ULP contract. Degree 4 is preferable if exactness matters
+(for example, bit-reproducibility against a reference).
+
+**Buffer depth.** With `cb_tiles=1`, only materialized slows (4,116 → 4,560,
++11%). Its extra pack/unpack round trip through `cb_tmp` needs a second buffer
+slot to overlap. The fused candidate (2,024), split4 and the vendor kernels are
+unchanged, so their inner loops are not limited by buffer capacity.
+
+**Bottleneck and run-to-run spread.** TRISC1 (math) is still the longest zone,
+but for the candidate TRISC0 (1,995) and TRISC2 (2,009) are within 2% of it
+(2,027). For materialized the three are within 0.2% of each other, but at twice
+the length. The legacy and split4 kernels vary by 0.1–0.2% across measured
+launches. Both fused kernels show discrete steps: the candidate's 20 launches
+cluster at 2,024, ~2,031, ~2,092 and 2,163; vendor fused clusters at 1,734,
+~1,742 and ~1,803. The inputs are identical every launch, so this is not
+data-dependent arithmetic. A plausible but untested explanation: once math work
+is short, reader/NoC/DRAM timing starts to show in the zone. Medians are robust
+to it; p95 is 3–4% above the median.
+
+**Repeatability.** The degree-3 candidate measured 2,027 and 2,024 in two runs 48 s
+apart. Split4 measured 3,125 and materialized 4,116 here, against 3,128 and 4,116
+on the previous day under a different reservation. Cross-chip variance is still
+unmeasured.
+
+### 4.3 Limits of this result
+
+- Scope is finite `4 <= |x| <= 88.5`, finite normal `g`, and normal reference
+  outputs. Out of scope the candidate returns ±0 (1,574 cases) or signed minimum
+  normal (564 cases, the documented boundary promotion). There is no dispatch,
+  inf/NaN guard, or subnormal support, so this is not a replacement for the
+  full-domain kernel.
+- Each tile repeats one `(x, g)` pair. Mixed-lane tiles, multi-core runs, fast
+  dispatch and end-to-end TTNN-level latency are untested.
+- The vendor comparators are tt-metal primitives inside this harness. They are
+  not TTNN's `tanh_bw` op. TTNN `tanh_bw` passes 3 of 10 critical tiles in the
+  `--critical` run on the same day, and no device cycle count exists for it.
+- Range reduction, polynomial evaluation, exponent reconstruction and fusion are
+  established techniques (see the attribution note in
+  `research/numerical_semantics.md`). Scale separation is not claimed as novel,
+  and `claimed_sound` remains false.
+
+### 4.4 Suggested next measurements
+
+1. A copy-only compute kernel timed with the same reader and packer gives the
+   fixed per-tile floor. Cycles above it can then be attributed to SFPU work.
+2. Try cutting the 17% gap to fused vendor. Profile the candidate's SFPU
+   sequence (range reduction plus reconstruction branches) and test whether the
+   boundary-repair `v_if` blocks dominate.
+3. Repeat the default run on two or three more chips and reservations for
+   variance.
+4. Profile TTNN `tanh_bw` on device with the same tiles, for a direct comparison
+   with what tt-metal ships.
+
+## Run 5: generated quadratic (`wh5`) and tt-metal `main` `tanh_bw`
+
+All numbers are **device**-labelled single-session diagnostics.
+
+| | |
+|---|---|
+| Source | `cb1cc6c6189e41ca8dd26bc27006b469c09aedff` (`wh5`), clean tree |
+| tt-metal build | `f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee`, slow dispatch for bw_syn kernels |
+| Machine | `wh-glx6u-02`, reservation `241170`, device 0 |
+| Main packet | `results/runs/wormhole_cb1cc6c_20261003T145747Z_d2/` (degree 2, default) |
+| Same-source cubic | `results/runs/wormhole_cb1cc6c_20261003T145822Z_d3/` |
+| TTNN packet | `results/runs/wormhole_ttnn_tanh_bw_main_20261003T150140Z/` |
+| Workload | Same 6,774 tiles and 4,636 in-scope cases as Run 4; 128 timed inputs |
+
+### 5.1 tt-metal `main` is the pinned implementation for `tanh_bw`
+
+On 2026-10-03, `origin/main` was `70222e907f979825d94d74ef43e50fa9e7f8aff8`, 110
+commits after the pin. The diff from the pin to that commit leaves the whole
+`tanh_bw` path unchanged: `ttnn/.../unary_backward/` (op, program factory,
+`eltwise_bw_tanh.cpp`), `api/compute/eltwise_unary/tanh_derivative.h`, and the
+Wormhole `ckernel_sfpu_tanh_derivative.h`. The only diff touching files on that
+search path is unrelated new headers added to `tt_metal/hw/sources.cmake`. The
+pinned build's `ttnn.tanh_bw` is therefore the current `main` implementation. It was
+loaded from the pin worktree, which is recorded in the packet provenance.
+
+`main`'s kernel copies `grad` and `input` into DEST, applies
+`TanhDerivative<Approx::Exact>` and `MulBinary`, then packs. Unlike the
+bw_syn harness, it does not force FP32 DEST accumulation.
+
+### 5.2 How TTNN was measured
+
+The script `ttnn_tanh_bw_sweep.py` is saved in the TTNN packet. It is a Python
+cross-check, not repository code.
+
+- **Correctness:** one `ttnn.tanh_bw` call over all 6,774 constant tiles from
+  the Run 5 `tail.csv`. The script checks lane uniformity and grades in-scope cases
+  with the same `<= 1` BF16 ULP rule against the recorded oracle bits.
+- **Cycles:** the 128 timed inputs are replicated once per core, so each of the
+  72 cores processes exactly those 128 tiles. One correctness launch, 5 warmups
+  and 20 measured launches were run under the device profiler. Per core and
+  launch, the span runs from the earliest to the latest `TRISC-KERNEL` zone across
+  the three TRISCs, divided by 128. The log contains exactly 26 launches, all of
+  them `tanh_bw`.
+- **Not like-for-like** with bw_syn zones. TTNN runs in fast dispatch on 72 cores
+  with its own reader and writer and shared DRAM. `TRISC-KERNEL` also includes
+  kernel initialisation, whereas the bw_syn zones start after
+  `compute_kernel_hw_startup`. Treat the TTNN cycle figure as the shipped op's
+  per-core cost, not as a controlled kernel comparison. The controlled
+  counterpart is the "vendor derivative × g" row.
+
+### 5.3 Results
+
+| Kernel | Pass / 4,636 | Failures | Exact | Median cyc/tile | Max of 20 |
+|---|---:|---|---:|---:|---:|
+| **Generated quadratic (wh5 default)** | **4,636** | none | 81.9% | **1,531** | 1,603 |
+| wh4 cubic, same packet | 4,636 | none | 88.6% | 1,986 | 2,056 |
+| Fused vendor tail × g | 3,278 | 1,358 ±0 | 99.2% | 1,691 | 1,755 |
+| Split4 | 3,798 | 838 ±0 | 99.5% | 3,125 | 3,127 |
+| Vendor derivative × g | 3,278 | 1,358 ±0 | 99.2% | 3,405 | 3,828 |
+| Materialized | 3,203 | 1,363 ±0, 70 wrong | 87.9% | 4,117 | 4,119 |
+| **TTNN `tanh_bw` (`main`)** | 3,258 | 1,378 ±0 | 88.2% | 4,154 † | 4,172 (p95) † |
+
+† Per core, 72 cores, fast dispatch, `TRISC-KERNEL` zone (see §5.2).
+
+The same-source degree-3 packet repeats the cubic at 1,985 and fused vendor at
+1,691. The two `wh5` packets agree to within 1 cycle/tile on every shared kernel.
+
+### 5.4 Analysis
+
+**The generated quadratic is the first candidate faster than the equally fused
+vendor kernel.** At 1,531 cycles/tile it is 9.5% faster than fused vendor (1,691),
+23% faster than the cubic in the same packet (1,986), and 51% faster than split4.
+It still passes all 4,636 in-scope cases. In Run 4 the cubic was 17% *slower*
+than fused vendor. That gap is now reversed by an algorithmic change, measured
+within one packet and one pipeline.
+
+**Pipeline versus algorithm.** `wh5` also removed a redundant second
+`copy_init` from the shared fused path. That change alone accounts for the cubic
+moving from 2,027 (Run 4) to 1,986, and fused vendor from 1,735 to 1,691, about
+40 cycles/tile each. Every comparison above is within the Run 5 packet, so all
+three fused kernels include it. The remaining 455 cycles/tile between the cubic
+and the quadratic come from the shorter arithmetic: base-2 range reduction and two
+polynomial FMAs instead of a two-part `ln 2` reduction and three FMAs, plus
+minimum-normal saturation in place of the `v_if` boundary repair.
+
+**Cost of the shorter polynomial.** Exact outputs drop from 88.6% (cubic) to
+81.9%. Every output stays within the 1-ULP contract. The error is more
+balanced: −1 ULP on 543 cases and +1 on 294, against 122 and 406 for the
+cubic. If bit-exactness matters, degree 4 (98.8% exact, Run 4) remains the option.
+
+**tt-metal `main`.** The shipped op fails 1,378 of 4,636 in-scope cases, all
+false zeros, for the same reason as the vendor comparator. The derivative
+underflows before the gradient is applied. It is also less exact on the cases
+it passes (88.2% versus 99.2% for the bw_syn vendor-derivative kernel). Its
+outputs match that kernel bit-for-bit on 4,019 of 4,636 tiles, and the two differ on
+230 pass/fail outcomes. This is consistent with `main` keeping DEST in BF16
+rather than FP32; that attribution is not isolated. Per core, the shipped op
+takes 4,154 cycles/tile in its multi-core setting. The generated quadratic takes
+1,531 single-core, about 2.7× less, while also passing the 1,378 cases `main`
+returns as zero. Because the settings differ (§5.2), the 2.7× is indicative
+only. The controlled figure is 2.2× against vendor derivative × g (3,405) in the
+same harness.
+
+**Repeatability.** The materialized kernel measured 4,116–4,117 in every tail
+packet from Run 2 to Run 5, across two days and two reservations. Split4 measured
+3,125–3,128. The fused kernels again show small launch-to-launch steps (max up
+to 4.7% above median); medians are unaffected.
+
+### 5.5 Limits
+
+The scope from Run 4 §4.3 still applies: finite `4 <= |x| <= 88.5`, finite normal
+`g`, normal reference outputs only, constant tiles, single core, no dispatch to
+a full-domain kernel, and `claimed_sound=false`. The quadratic's coefficients were
+accepted by an exhaustive **host** sweep (`results/host/tail_synthesis/`). The
+device run covers the 6,774-tile sweep only.
+
+## Summary across all runs
+
+Cycles are median cycles per tile. "Pass" is over each run's own in-scope set,
+and the sets grew between runs (Run 2: 753, Run 3: 2,938, Runs 4–5: 4,636), so
+pass counts are comparable only within a column. Critical rows are the
+ten-case legacy harness.
+
+| Kernel | Run 1 `wh1` (Oct 1) | Run 2 `wh2` | Run 3 `wh3` | Run 4 `wh4` (Oct 3) | Run 5 `wh5` (Oct 3) |
+|---|---|---|---|---|---|
+| Factored + inf guard (critical, 10 tiles) | 5,748; 8/10 | – | 5,750; 8/10 | 5,707; 8/10 | – |
+| Factored, guard removed (ablation) | 3,965; 8/10 | – | – | – | – |
+| Materialized (critical) | 4,207 | – | 4,207 | 4,218 | – |
+| Split4 tail | – | 3,128; 753/753 | 3,128; 2,938/2,938 | 3,125; 3,798/4,636 | 3,125; 3,798/4,636 |
+| Fused cubic tail | – | – | – | 2,027; 4,636/4,636 | 1,986; 4,636/4,636 |
+| Fused quartic tail | – | – | – | 2,122; 4,636/4,636 | – |
+| **Generated quadratic tail** | – | – | – | – | **1,531; 4,636/4,636** |
+| Vendor derivative × g | – | – | 3,407; 2,610/2,938 | 3,405; 3,278/4,636 | 3,405; 3,278/4,636 |
+| Fused vendor tail × g | – | – | – | 1,735; 3,278/4,636 | 1,691; 3,278/4,636 |
+| Materialized (tail sweep) | – | 4,116; 648/753 | 4,116; 2,562/2,938 | 4,116; 3,203/4,636 | 4,117; 3,203/4,636 |
+| TTNN `tanh_bw`, critical | – | – | 3/10 | 3/10 | – |
+| **TTNN `tanh_bw`, tt-metal `main`** | – | – | – | – | **4,154 †; 3,258/4,636** |
+
+† Per core, 72 cores, fast dispatch, `TRISC-KERNEL` zone; not a controlled
+kernel comparison (see §5.2).
+
+Evidence: Run 1 and the critical rows are under `results/paper/`. Runs 4–5 are under
+`results/runs/`. The Run 2 and Run 3 tail sweeps were written to git-ignored
+`results/hw/` files and were not committed (see "Run 2" and "Run 3" above). Their
+figures are from this bring-up session only.

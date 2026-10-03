@@ -1,0 +1,9 @@
+label,arch,tt_metal_commit,stage,x_bits,g_bits,expected_bits,observed_bits,equal
+device_probe,wormhole,f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee,raw_copy,0x0001,0x3f80,0x0001,0x0001,1
+device_probe,wormhole,f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee,raw_copy,0x0080,0x3f80,0x0080,0x0080,1
+device_probe,wormhole,f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee,compute_copy,0x0001,0x3f80,0x0001,0x0000,0
+device_probe,wormhole,f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee,compute_copy,0x0080,0x3f80,0x0080,0x00c0,0
+device_probe,wormhole,f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee,compute_mul,0x0080,0x3f00,0x0040,0x0000,0
+device_probe,wormhole,f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee,compute_mul,0x8080,0x3f00,0x8040,0x0000,0
+device_probe,wormhole,f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee,compute_mul,0x0080,0x3f80,0x0080,0x00c0,0
+device_probe,wormhole,f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee,compute_mul,0x0100,0x3f00,0x0080,0x00a0,0

@@ -1,0 +1,12 @@
+label=ttnn_device
+op=ttnn.tanh_bw (UnaryBackwardOpType::TANH_BW, eltwise_bw_tanh.cpp)
+tt_metal_build_commit=f9524a5f1b75180f00ce7413c2fc1c5cca1f29ee
+tt_metal_origin_main=70222e907f979825d94d74ef43e50fa9e7f8aff8
+tanh_bw_path_unchanged_build_to_main=1 (unary_backward/, eltwise_bw_tanh.cpp, tanh_derivative SFPU: no diff; only unrelated sources.cmake entries)
+inputs=results/runs/wormhole_cb1cc6c_20261003T145747Z_d2/tail.csv
+bw_syn_commit=cb1cc6c6189e41ca8dd26bc27006b469c09aedff
+dispatch=fast (TTNN default); cores_per_launch=72; tiles_per_core=128 (timed inputs replicated per core)
+timing_zone=TRISC-KERNEL (includes kernel init); runs=1 correctness + 5 warmup + 20 measured
+device_id=0
+utc=20261003T150140Z
+wh-glx6u-02-special-ijankowski-for-reservation-241170
